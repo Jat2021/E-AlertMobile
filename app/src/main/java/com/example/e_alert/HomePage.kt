@@ -18,8 +18,7 @@ import androidx.compose.ui.unit.dp
 fun HomePage () {
     BottomSheet () {
         Box(
-            Modifier
-                .fillMaxWidth(),
+            Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
             Card(
