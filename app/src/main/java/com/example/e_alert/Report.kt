@@ -1,19 +1,24 @@
 package com.example.e_alert
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -52,25 +57,26 @@ data class User(
 @Composable
 fun PreviewReport () {
     Report(
-        modifier = Modifier,
         user = User(
             name = "Justin Glen Vasquez",
             profilePhoto = R.drawable.ic_launcher_foreground
         ),
         timestamp = "2m ago",
-        reportDescription = "Baha na po dito sa may Sta. Cruz, Ateneo Gate",
-        reportPhotos = R.drawable.ic_launcher_background,
+        reportPhotos = listOf(
+            R.drawable.ic_launcher_background,
+            R.drawable.ic_launcher_background
+        ),
         reportType = "Flood",
-        reportLocation = "Sta. Cruz"
+        reportLocation = "Sta. Cruz",
+        reportDescription = "Baha na po dito sa may Sta. Cruz, Ateneo Gate"
     )
 }
 
 @Composable
 fun Report (
-    modifier : Modifier,
     user: User,
     timestamp : String,
-    @DrawableRes reportPhotos : Int,
+    @DrawableRes reportPhotos : List<Int>,
     reportType : String,
     reportLocation : String,
     reportDescription : String = "",
@@ -88,7 +94,7 @@ fun Report (
         Column (Modifier.fillMaxWidth()
         ) {
             Header(user = user, timePosted = timestamp)
-            ReportPhotos(image = reportPhotos)
+            ReportPhotos(images = reportPhotos)
 
             Column (Modifier.padding(
                 start = 16.dp, top = 16.dp, end = 16.dp)
@@ -147,17 +153,54 @@ fun Header (user : User, timePosted: String) {
     } //Row [Wrapper]
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ReportPhotos (@DrawableRes image : Int) {
+fun ReportPhotos (@DrawableRes images : List<Int>) {
     //TODO: Includes photos coming from the the user (from DB)
-    Image(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp),
-        painter = painterResource(id = image),
-        contentDescription = null,
-        contentScale = ContentScale.Crop
-    )
+
+    val pagerState = rememberPagerState { images.size }
+
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .size(200.dp)
+    ) {
+        HorizontalPager(
+            modifier = Modifier,
+            state = pagerState
+        ) { index ->
+            Image(
+                painter = painterResource(id = images[index]),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+            contentAlignment = Alignment.TopEnd
+        ) {
+            Row {
+                val pageCounter = "${pagerState.settledPage+1} / ${pagerState.pageCount}"
+
+                Surface(
+                    modifier = Modifier,
+                    shape = MaterialTheme.shapes.small,
+                    color = MaterialTheme.colorScheme.inverseSurface.copy(0.9f)
+                ) {
+                    Text(
+                        modifier = Modifier.padding(8.dp, 4.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.inverseOnSurface,
+                        text = pageCounter
+                    )
+                }
+            }
+        } //Row
+    } //Box
+
+
 }
 
 @Composable
