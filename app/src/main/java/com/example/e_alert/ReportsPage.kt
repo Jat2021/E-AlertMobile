@@ -18,7 +18,7 @@ fun ReportsPage (modifier: Modifier = Modifier) {
     Surface (
         color = MaterialTheme.colorScheme.background,
         modifier = Modifier
-        .fillMaxSize()) {
+    ) {
         Report(
             modifier = modifier,
             user = User(
@@ -28,7 +28,8 @@ fun ReportsPage (modifier: Modifier = Modifier) {
             timestamp = "2 mins. ago",
             reportDescription = "Baha na po dito sa may Sta. Cruz, Ateneo Gate",
             reportPhotos = R.drawable.ic_launcher_background,
-            reportType = "Flood"
+            reportType = "Flood",
+            reportLocation = "Sta. Cruz"
         )
     }
 }
