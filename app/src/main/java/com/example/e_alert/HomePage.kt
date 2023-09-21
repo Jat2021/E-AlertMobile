@@ -22,8 +22,7 @@ fun HomePage () {
             contentAlignment = Alignment.Center
         ) {
             Card(
-                modifier =
-                Modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(1.dp)
             ) {

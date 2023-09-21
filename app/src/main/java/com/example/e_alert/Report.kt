@@ -33,6 +33,9 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,7 +45,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -55,46 +57,38 @@ data class User(
 
 @Preview
 @Composable
-fun PreviewReport () {
+fun Preview () {
     Report(
-        user = User(
+        ReportData(
+            user = User(
             name = "Justin Glen Vasquez",
-            profilePhoto = R.drawable.ic_launcher_foreground
+            profilePhoto = R.drawable.profile_photo_placeholder_foreground
         ),
-        timestamp = "2m ago",
-        reportPhotos = listOf(
-            R.drawable.ic_launcher_background,
-            R.drawable.ic_launcher_background
+        timestamp = "2 mins. ago",
+        images = listOf(
+            R.drawable.flooded_area_1,
+            R.drawable.flooded_area_2,
+            R.drawable.flooded_area_3,
         ),
         reportType = "Flood",
         reportLocation = "Sta. Cruz",
-        reportDescription = "Baha na po dito sa may Sta. Cruz, Ateneo Gate"
+        reportDescription = "Baha na po dito sa may Sta. Cruz, Ateneo Gate")
     )
 }
 
 @Composable
-fun Report (
-    user: User,
-    timestamp : String,
-    @DrawableRes reportPhotos : List<Int>,
-    reportType : String,
-    reportLocation : String,
-    reportDescription : String = "",
-    numberOfLikes : Int = 0,
-    numberOfDislikes : Int = 0,
-) {
+fun Report (contents : ReportData) {
     Card (
         modifier = Modifier.height(IntrinsicSize.Min),
         shape = RectangleShape,
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background
+            containerColor = colorScheme.surface
         )
     ) {
         Column (Modifier.fillMaxWidth()
         ) {
-            Header(user = user, timePosted = timestamp)
-            ReportPhotos(images = reportPhotos)
+            Header(user = contents.user, timePosted = contents.timestamp)
+            if (contents.images != null) ReportPhotos(images = contents.images)
 
             Column (Modifier.padding(
                 start = 16.dp, top = 16.dp, end = 16.dp)
@@ -104,15 +98,15 @@ fun Report (
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    ReportTypeLabel(reportType)
-                    ReportLocationLabel(reportLocation = reportLocation)
+                    ReportTypeLabel(contents.reportType)
+                    ReportLocationLabel(reportLocation = contents.reportLocation)
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-                ReportDescription(text = reportDescription)
+                ReportDescription(text = contents.reportDescription)
 
                 Spacer(modifier = Modifier.height(16.dp))
-                LikesAndDislikes(numberOfLikes, numberOfDislikes)
+                LikesAndDislikes(contents.numberOfLikes, contents.numberOfDislikes)
             } //Column
         } //Column
     }
@@ -130,25 +124,28 @@ fun Header (user : User, timePosted: String) {
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(color = colorResource(id = R.color.teal_700)),
+                    .background(color = MaterialTheme.colorScheme.secondary),
                 painter = painterResource(id = user.profilePhoto),
                 contentDescription = null
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.titleMedium,
+                    color = colorScheme.onBackground,
+                    style = typography.titleMedium,
                     text = user.name)
                 Text(
-                    color = MaterialTheme.colorScheme.outline,
-                    style = MaterialTheme.typography.titleSmall,
+                    color = colorScheme.onSurfaceVariant,
+                    style = typography.titleSmall,
                     text = timePosted)
             }
         } //Row [User]
 
         IconButton(onClick = { /*TODO*/ }) {
-            Icon(imageVector = Icons.Filled.MoreVert, contentDescription = null)
+            Icon(
+                imageVector = Icons.Filled.MoreVert,
+                contentDescription = null
+            )
         }
     } //Row [Wrapper]
 }
@@ -207,12 +204,13 @@ fun ReportPhotos (@DrawableRes images : List<Int>) {
 fun ReportTypeLabel (reportType : String) {
     Surface (
         modifier = Modifier,
-        shape = MaterialTheme.shapes.small,
-        color = MaterialTheme.colorScheme.secondary,
+        shape = shapes.small,
+        color = colorScheme.secondaryContainer,
     ) {
         Text(
             modifier = Modifier.padding(8.dp, 4.dp),
-            style = MaterialTheme.typography.labelMedium,
+            color = colorScheme.onSecondaryContainer,
+            style = typography.labelMedium,
             text = reportType.uppercase(),
         )
     }
@@ -231,8 +229,8 @@ fun ReportLocationLabel (reportLocation : String) {
         Spacer(modifier = Modifier.width(8.dp))
 
         Text(
-            color = MaterialTheme.colorScheme.outline,
-            style = MaterialTheme.typography.labelMedium,
+            color = colorScheme.onSurfaceVariant,
+            style = typography.labelMedium,
             text = reportLocation
         )
     }
@@ -243,9 +241,9 @@ fun ReportDescription (text : String) {
     Column{
         Text(
             text = text,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = colorScheme.onSurface,
             fontSize = 16.sp,
-            style = MaterialTheme.typography.bodyMedium
+            style = typography.bodyMedium
         )
     }
 }
@@ -255,14 +253,14 @@ fun LikesAndDislikesLabel (likes : Int, dislikes : Int) {
     Row {
         Row (verticalAlignment = Alignment.CenterVertically) {//Likes
             Icon(
-                tint = MaterialTheme.colorScheme.outline,
+                tint = colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(18.dp),
                 imageVector = Icons.Rounded.ThumbUp,
                 contentDescription = null
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                color = MaterialTheme.colorScheme.outline,
+                color = colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelMedium,
                 text = likes.toString()
             )
@@ -270,15 +268,15 @@ fun LikesAndDislikesLabel (likes : Int, dislikes : Int) {
         Spacer(modifier = Modifier.width(16.dp))
         Row (verticalAlignment = Alignment.CenterVertically){//Dislikes
             Icon(
-                tint = MaterialTheme.colorScheme.outline,
+                tint = colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(18.dp),
                 imageVector = Icons.Rounded.ThumbDown,
                 contentDescription = null
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                color = MaterialTheme.colorScheme.outline,
-                style = MaterialTheme.typography.labelMedium,
+                color = colorScheme.onSurfaceVariant,
+                style = typography.labelMedium,
                 text = dislikes.toString()
             )
         }
@@ -311,12 +309,12 @@ fun LikesAndDislikes (numberOfLikes : Int, numberOfDislikes : Int) {
                 Icon(
                     imageVector = Icons.Rounded.ThumbUp,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onBackground,
+                    tint = colorScheme.onSurface,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    color = MaterialTheme.colorScheme.onBackground,
+                    color = colorScheme.onSurface,
                     text = "Like"
                 )
             }
@@ -338,12 +336,12 @@ fun LikesAndDislikes (numberOfLikes : Int, numberOfDislikes : Int) {
                 Icon(
                     imageVector = Icons.Rounded.ThumbUp,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onBackground,
+                    tint = colorScheme.onSurface,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    color = MaterialTheme.colorScheme.onBackground,
+                    color = colorScheme.onSurface,
                     text = "Dislike"
                 )
             }
