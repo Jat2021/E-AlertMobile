@@ -1,8 +1,6 @@
 package com.example.e_alert
 
-import androidx.lifecycle.ViewModel
 import com.example.e_alert.reports.ReportData
-import com.example.e_alert.reports.User
 import java.sql.Timestamp
 
 class ReportsViewModel {
