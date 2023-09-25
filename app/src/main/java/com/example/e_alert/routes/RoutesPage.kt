@@ -1,4 +1,4 @@
-package com.example.e_alert
+package com.example.e_alert.routes
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier

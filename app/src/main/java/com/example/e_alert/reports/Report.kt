@@ -1,4 +1,4 @@
-package com.example.e_alert
+package com.example.e_alert.reports
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -49,12 +49,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.e_alert.R
 
 data class User(
     val name : String,
     @DrawableRes val profilePhoto : Int,
 )
 
+/**************[ PREVIEW ]****************************/
 @Preview
 @Composable
 fun Preview () {
@@ -75,6 +77,7 @@ fun Preview () {
         reportDescription = "Baha na po dito sa may Sta. Cruz, Ateneo Gate")
     )
 }
+/*****************************************************/
 
 @Composable
 fun Report (contents : ReportData) {
