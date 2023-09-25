@@ -1,4 +1,4 @@
-package com.example.e_alert
+package com.example.e_alert.home
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.e_alert.BottomSheet
 
 @Composable
 fun HomePage () {
@@ -77,10 +78,5 @@ fun HomePage () {
             }
         }
     }
-}
-
-@Composable
-fun Map (modifier: Modifier = Modifier) {
-    //Google Map API goes here
 }
 

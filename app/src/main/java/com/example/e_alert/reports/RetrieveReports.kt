@@ -1,6 +1,7 @@
-package com.example.e_alert
+package com.example.e_alert.reports
 
 import androidx.annotation.DrawableRes
+import com.example.e_alert.R
 
 
 data class ReportData (
