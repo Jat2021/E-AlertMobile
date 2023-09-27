@@ -10,7 +10,7 @@ class ReportsViewModel {
 
     fun createPost (
         description : String,
-        photos : List</*TODO: Format of Photos*/>,
+        /*photos : List<*//*TODO: Format of Photos*//*>,*/
         reportType : String,
         baranggay : String,
         street : String,

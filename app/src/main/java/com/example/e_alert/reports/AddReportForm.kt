@@ -1,12 +1,13 @@
 package com.example.e_alert.reports
 
-
 import android.annotation.SuppressLint
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,172 +16,241 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AddPhotoAlternate
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.MyLocation
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.test.espresso.base.Default
+import coil.compose.AsyncImage
+import com.example.e_alert.ui.theme.EAlertTheme
 
+/**************[ PREVIEW ]****************************/
 
-@SuppressLint("RememberReturnType")
-@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true)
 @Composable
-fun Form(){
-    Column( modifier = Modifier.padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally) {
-        Column {
-            var description by remember { mutableStateOf("") }
-
-            Text(
-                style = MaterialTheme.typography.titleLarge,
-                text = "Details")
-
-            OutlinedTextField(
-                value = description,
-                onValueChange = { newDescription ->
-                    description = newDescription
-                },
-                label = {
-                    Text(
-                        text = "Description")
-                },
-                maxLines = 4,
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
-            Row {
-                RadioButtons()
+fun DefaultPreview(){
+    EAlertTheme {
+        Scaffold (
+            topBar = { TopBarReports() }
+        ) { paddingValues ->
+            Column (modifier = Modifier.padding(paddingValues)) {
+                AddReport()
             }
-            SelectPhoto()
-        }
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Column {
-            var street by remember { mutableStateOf("") }
-            Row (
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    style = MaterialTheme.typography.titleLarge,
-                    text = "Location")
-                Row (verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        style = MaterialTheme.typography.bodyMedium,
-                        text = "Use Current Location")
-                    IconButton(onClick = {/*TODO*/ }) {
-                        Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = "currentLoc"
-                        )
-                    }
-                }
-            }
-            OutlinedTextField(
-                value = street,
-                onValueChange = { newStreet ->
-                    street = newStreet
-                },
-                label = {
-                    Text(text = "Street")
-                },
-                maxLines = 2,
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
-            Row {
-                LocDropdown()
-            }
-        }
-        Button(
-            modifier =Modifier.fillMaxWidth(),
-            onClick = { /*TODO*/ }
-        ) {
-            Text(text = "Done")
-        }
-        Button(
-            modifier =Modifier.fillMaxWidth(),
-            onClick = { /*TODO*/ }
-        ) {
-            Text(text = "Cancel")
         }
     }
 }
 
+/*****************************************************/
+
+@SuppressLint("RememberReturnType")
+@Composable
+fun AddReport() {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        DetailsSection()
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        ReportTypeSection()
+
+        Divider(
+            thickness = 2.dp,
+            modifier = Modifier.padding(vertical = 16.dp)
+        )
+
+        LocationSection()
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        OutlinedButton(
+            modifier =Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.small,
+            onClick = { /*TODO*/ }
+        ) { Text(text = "Cancel") }
+
+        Button(
+            modifier =Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.small,
+            onClick = { /*TODO*/ }
+        ) { Text(text = "Submit") }
+    }
+} //AddReport()
+
+@Composable
+fun DetailsSection() {
+    Column {
+        var description by remember { mutableStateOf("") }
+
+        Text(
+            style = MaterialTheme.typography.titleMedium,
+            text = "Details"
+        )
+
+        OutlinedTextField(
+            value = description,
+            onValueChange = { newDescription ->
+                description = newDescription
+            },
+            label = { Text(text = "Description") },
+            maxLines = 4,
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.small
+        )
+
+        SelectPhoto()
+    } //Column
+} //DetailsSection
+
+@Composable
+fun ReportTypeSection() {
+    Column {
+        Text(
+            style = MaterialTheme.typography.titleMedium,
+            text = "Report Type"
+        )
+        RadioButtons()
+    }
+} //ReportTypeSection()
+
+@Composable
+fun LocationSection() {
+    Column {
+        var streetText by remember { mutableStateOf("") }
+
+        Row (
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                style = MaterialTheme.typography.titleMedium,
+                text = "Location")
+
+            FilledTonalIconButton(
+                shape = MaterialTheme.shapes.small,
+                onClick = {/*TODO*/ },
+                colors = IconButtonDefaults
+                    .filledIconButtonColors(
+                        containerColor = colorScheme.tertiaryContainer)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.MyLocation,
+                    contentDescription = "Use my current location"
+                )
+            }
+        }
+        OutlinedTextField(
+            value = streetText,
+            onValueChange = { newStreet ->
+                streetText = newStreet
+            },
+            label = { Text(text = "Street") },
+            maxLines = 2,
+            modifier = Modifier
+                .fillMaxWidth(),
+            shape = MaterialTheme.shapes.small,
+        )
+
+        BaranggayDropdownMenu()
+    } //Column
+} //LocationSection()
+
 @Composable
 fun SelectPhoto() {
-    var selectedImageUri by remember {
-        mutableStateOf<Uri?>(null)
+    var selectedImageUris by rememberSaveable {
+        mutableStateOf<List<Uri>>(emptyList())
     }
 
-    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia(),
-        onResult = { uri -> selectedImageUri = uri}
+    val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(),
+        onResult = { uris -> selectedImageUris = uris}
     )
 
-    LazyColumn{
+    LazyColumn {
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround
-            ){
-                Button(
-                    modifier =Modifier.fillMaxWidth(),
+            ) {
+                FilledTonalButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
                     onClick = {
-                        singlePhotoPickerLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        multiplePhotoPickerLauncher.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
                         )
                     }
                 ) {
-                    Text(text = "Pick one photo")
+                    Icon(
+                        imageVector = Icons.Rounded.AddPhotoAlternate,
+                        contentDescription = null)
+                    Text(text = "Add photos")
                 }
             }
         }
-        item {
-            AsyncImage(model = selectedImageUri,
+        items(selectedImageUris) { uri ->
+            AsyncImage(
+                model = uri,
                 contentDescription = null,
                 modifier = Modifier.fillMaxWidth(),
                 contentScale = ContentScale.Crop
             )
         }
-
-    }
-}
+    } //LazyColumn
+} //SelectPhoto()
 
 data class ToggleableInfo(
     val isChecked: Boolean,
     val text: String
 )
 
-
 @Composable
 private fun RadioButtons() {
     val radioButtons = remember {
         mutableStateListOf(
             ToggleableInfo(
-                isChecked = true,
+                isChecked = false,
                 text = "Flood"
             ),
             ToggleableInfo(
@@ -188,16 +258,16 @@ private fun RadioButtons() {
                 text = "Road Accident"
             )
         )
-    }
+    } //remember
 
     Row (
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
+        modifier = Modifier.fillMaxWidth()
     ) {
-        radioButtons.forEachIndexed{ index, info ->
+        radioButtons.forEach { info ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
+                    .padding(end = 16.dp)
                     .clickable {
                         radioButtons.replaceAll {
                             it.copy(
@@ -205,7 +275,6 @@ private fun RadioButtons() {
                             )
                         }
                     }
-                    .padding(end = 16.dp)
             ) {
                 RadioButton(
                     selected = info.isChecked,
@@ -220,38 +289,37 @@ private fun RadioButtons() {
                 Text(text = info.text )
             }
         }
-    }
-}
+    } //Row
+} //RadioButtons()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LocDropdown(){
+fun BaranggayDropdownMenu() {
     var isExpanded by remember {
         mutableStateOf(false)
     }
 
-    var location by remember {
+    var baranggay by remember {
         mutableStateOf("")
     }
 
     ExposedDropdownMenuBox(
         expanded = isExpanded ,
-        onExpandedChange = {isExpanded = it},
-
-        ) {
+        onExpandedChange = {isExpanded = it}
+    ) {
         OutlinedTextField(
-            value = location,
+            value = baranggay,
             onValueChange = {},
             readOnly = true,
             trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
+                ExposedDropdownMenuDefaults
+                    .TrailingIcon(expanded = isExpanded)
             },
-            label = {
-                Text(text = "Barangay")
-            },
+            label = { Text(text = "Baranggay") },
             modifier = Modifier
                 .menuAnchor()
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            shape = MaterialTheme.shapes.small,
         )
 
         ExposedDropdownMenu(
@@ -263,7 +331,7 @@ fun LocDropdown(){
                     Text(text = "Abella")
                 },
                 onClick = {
-                    location = "Abella"
+                    baranggay = "Abella"
                     isExpanded = false
                 }
             )
@@ -272,7 +340,7 @@ fun LocDropdown(){
                     Text(text = "Bagumbayan Norte")
                 },
                 onClick = {
-                    location = "Bagumbayan Norte"
+                    baranggay = "Bagumbayan Norte"
                     isExpanded = false
                 }
             )
@@ -281,7 +349,7 @@ fun LocDropdown(){
                     Text(text = "Bagumbayan Sur")
                 },
                 onClick = {
-                    location = "Bagumbayan Sur"
+                    baranggay = "Bagumbayan Sur"
                     isExpanded = false
                 }
             )
@@ -290,7 +358,7 @@ fun LocDropdown(){
                     Text(text = "Balatas")
                 },
                 onClick = {
-                    location = "Balatas"
+                    baranggay = "Balatas"
                     isExpanded = false
                 }
             )
@@ -299,7 +367,7 @@ fun LocDropdown(){
                     Text(text = "Calauag")
                 },
                 onClick = {
-                    location = "Calauag"
+                    baranggay = "Calauag"
                     isExpanded = false
                 }
             )
@@ -308,7 +376,7 @@ fun LocDropdown(){
                     Text(text = "Cararayan")
                 },
                 onClick = {
-                    location = "Cararayan"
+                    baranggay = "Cararayan"
                     isExpanded = false
                 }
             )
@@ -317,7 +385,7 @@ fun LocDropdown(){
                     Text(text = "Carolina")
                 },
                 onClick = {
-                    location = "Carolina"
+                    baranggay = "Carolina"
                     isExpanded = false
                 }
             )
@@ -326,7 +394,7 @@ fun LocDropdown(){
                     Text(text = "Concepcion Grande")
                 },
                 onClick = {
-                    location = "Concepcion Grande"
+                    baranggay = "Concepcion Grande"
                     isExpanded = false
                 }
             )
@@ -335,7 +403,7 @@ fun LocDropdown(){
                     Text(text = "Concepcion Pequeña")
                 },
                 onClick = {
-                    location = "Concepcion Pequeña"
+                    baranggay = "Concepcion Pequeña"
                     isExpanded = false
                 }
             )
@@ -344,7 +412,7 @@ fun LocDropdown(){
                     Text(text = "Dayangdang")
                 },
                 onClick = {
-                    location = "Dayangdang"
+                    baranggay = "Dayangdang"
                     isExpanded = false
                 }
             )
@@ -353,7 +421,7 @@ fun LocDropdown(){
                     Text(text = "Del Rosario")
                 },
                 onClick = {
-                    location = "Del Rosario"
+                    baranggay = "Del Rosario"
                     isExpanded = false
                 }
             )
@@ -362,7 +430,7 @@ fun LocDropdown(){
                     Text(text = "Dinaga")
                 },
                 onClick = {
-                    location = "Dinaga"
+                    baranggay = "Dinaga"
                     isExpanded = false
                 }
             )
@@ -371,7 +439,7 @@ fun LocDropdown(){
                     Text(text = "Igualdad Interior")
                 },
                 onClick = {
-                    location = "Igualdad Interior"
+                    baranggay = "Igualdad Interior"
                     isExpanded = false
                 }
             )
@@ -380,7 +448,7 @@ fun LocDropdown(){
                     Text(text = "Lerma")
                 },
                 onClick = {
-                    location = "Lerma"
+                    baranggay = "Lerma"
                     isExpanded = false
                 }
             )
@@ -389,7 +457,7 @@ fun LocDropdown(){
                     Text(text = "Liboton")
                 },
                 onClick = {
-                    location = "Liboton"
+                    baranggay = "Liboton"
                     isExpanded = false
                 }
             )
@@ -398,7 +466,7 @@ fun LocDropdown(){
                     Text(text = "Mabolo")
                 },
                 onClick = {
-                    location = "Mabolo"
+                    baranggay = "Mabolo"
                     isExpanded = false
                 }
             )
@@ -407,7 +475,7 @@ fun LocDropdown(){
                     Text(text = "Pacol")
                 },
                 onClick = {
-                    location = "Pacol"
+                    baranggay = "Pacol"
                     isExpanded = false
                 }
             )
@@ -416,7 +484,7 @@ fun LocDropdown(){
                     Text(text = "Panicuason")
                 },
                 onClick = {
-                    location = "Panicuason"
+                    baranggay = "Panicuason"
                     isExpanded = false
                 }
             )
@@ -425,7 +493,7 @@ fun LocDropdown(){
                     Text(text = "Peñafrancia")
                 },
                 onClick = {
-                    location = "Peñafrancia"
+                    baranggay = "Peñafrancia"
                     isExpanded = false
                 }
             )
@@ -434,7 +502,7 @@ fun LocDropdown(){
                     Text(text = "Sabang")
                 },
                 onClick = {
-                    location = "Sabang"
+                    baranggay = "Sabang"
                     isExpanded = false
                 }
             )
@@ -443,7 +511,7 @@ fun LocDropdown(){
                     Text(text = "San Felipe")
                 },
                 onClick = {
-                    location = "San Felipe"
+                    baranggay = "San Felipe"
                     isExpanded = false
                 }
             )
@@ -452,7 +520,7 @@ fun LocDropdown(){
                     Text(text = "San Francisco")
                 },
                 onClick = {
-                    location = "San Francisco"
+                    baranggay = "San Francisco"
                     isExpanded = false
                 }
             )
@@ -461,7 +529,7 @@ fun LocDropdown(){
                     Text(text = "San Isidro")
                 },
                 onClick = {
-                    location = "San Isidro"
+                    baranggay = "San Isidro"
                     isExpanded = false
                 }
             )
@@ -470,7 +538,7 @@ fun LocDropdown(){
                     Text(text = "Santa Cruz")
                 },
                 onClick = {
-                    location = "Santa Cruz"
+                    baranggay = "Santa Cruz"
                     isExpanded = false
                 }
             )
@@ -479,7 +547,7 @@ fun LocDropdown(){
                     Text(text = "Tabuco")
                 },
                 onClick = {
-                    location = "Tabuco"
+                    baranggay = "Tabuco"
                     isExpanded = false
                 }
             )
@@ -488,7 +556,7 @@ fun LocDropdown(){
                     Text(text = "Tinago")
                 },
                 onClick = {
-                    location = "Tinago"
+                    baranggay = "Tinago"
                     isExpanded = false
                 }
             )
@@ -497,7 +565,7 @@ fun LocDropdown(){
                     Text(text = "Triangulo")
                 },
                 onClick = {
-                    location = "Triangulo"
+                    baranggay = "Triangulo"
                     isExpanded = false
                 }
             )
@@ -508,17 +576,13 @@ fun LocDropdown(){
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppBar() {
+fun TopBarReports() {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     TopAppBar(
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors
             (titleContentColor = MaterialTheme.colorScheme.primary),
-        title = {
-            Text(
-                style = MaterialTheme.typography.displaySmall,
-                text = "Add Report")
-        },
+        title = { Text(text = "Add Report") },
         actions = {
             IconButton(onClick = { /*TODO*/ }) {
                 Icon(
@@ -531,15 +595,3 @@ fun AppBar() {
     )
 }
 
-/**************[ PREVIEW ]****************************/
-/*
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview(){
-    RepFormTheme {
-        Form()
-    }
-}
-
-*/
