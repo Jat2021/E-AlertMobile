@@ -1,6 +1,6 @@
 package com.example.e_alert
 
-import com.example.e_alert.reports.ReportData
+import com.example.e_alert.main_screen.reports.ReportData
 import java.sql.Timestamp
 
 class ReportsViewModel {

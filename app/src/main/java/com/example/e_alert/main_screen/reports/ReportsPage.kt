@@ -1,4 +1,4 @@
-package com.example.e_alert.reports
+package com.example.e_alert.main_screen.reports
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn

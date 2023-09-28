@@ -5,6 +5,8 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
@@ -14,6 +16,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,14 +27,15 @@ fun BottomNavBar (navController : NavHostController) {
     }
 
     NavigationBar (
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = colorScheme.surface,
+        tonalElevation = 3.dp
     ) {
         NavItems.forEachIndexed { index, item ->
             NavigationBarItem(
                 selected = selectedItemIndex == index,
                 onClick = {
                     selectedItemIndex = index
-                          navController.navigate(item.title)},
+                    navController.navigate(item.title)},
                 label = { Text(text = item.title) },
                 icon = {
                     BadgedBox(
