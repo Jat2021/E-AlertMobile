@@ -1,4 +1,4 @@
-package com.example.e_alert.reports
+package com.example.e_alert.main_screen.reports
 
 import android.annotation.SuppressLint
 import android.net.Uri

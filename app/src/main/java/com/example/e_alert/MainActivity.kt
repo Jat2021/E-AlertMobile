@@ -10,8 +10,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.e_alert.reports.AddReport
-import com.example.e_alert.reports.ReportsPage
+import com.example.e_alert.main_screen.reports.AddReport
+import com.example.e_alert.main_screen.reports.ReportsPage
 import com.example.e_alert.ui.theme.EAlertTheme
 
 class MainActivity : ComponentActivity() {
@@ -21,6 +21,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             EAlertTheme {
+                navController = rememberNavController()
                 MainScreen(navController = navController)
             } //EAlertTheme
         } //setContent

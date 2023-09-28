@@ -1,4 +1,4 @@
-package com.example.e_alert.home
+package com.example.e_alert.main_screen.home
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth

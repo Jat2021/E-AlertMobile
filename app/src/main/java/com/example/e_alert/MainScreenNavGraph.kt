@@ -4,9 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.e_alert.home.HomePage
-import com.example.e_alert.reports.ReportsPage
-import com.example.e_alert.routes.RoutesPage
+import com.example.e_alert.main_screen.home.HomePage
+import com.example.e_alert.main_screen.reports.ReportsPage
+import com.example.e_alert.main_screen.routes.RoutesPage
 
 sealed class MainScreen (var route : String) {
     object HomePage : MainScreen("Home")
