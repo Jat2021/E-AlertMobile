@@ -13,17 +13,16 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.example.e_alert.navigation.ReportsPageRoute
 
-@Preview
 @Composable
-fun ReportsPage (modifier: Modifier = Modifier) {
+fun ReportsPage (navController : NavHostController) {
     //displays reports only if there are any from at least 1 users
     Scaffold (
         containerColor = colorScheme.surfaceColorAtElevation(3.dp),
-        floatingActionButton = { AddReportFAB() },
+        floatingActionButton = { AddReportFAB(navController) },
         floatingActionButtonPosition = FabPosition.End
     ) { paddingValues ->
         val allDataReports = retrieveReports()
@@ -41,10 +40,10 @@ fun ReportsPage (modifier: Modifier = Modifier) {
 } //ReportsPage
 
 @Composable
-fun AddReportFAB(){
+fun AddReportFAB(navController: NavHostController) {
     ExtendedFloatingActionButton(
         containerColor = colorScheme.tertiaryContainer,
-        onClick = { /* do something */ }) {
+        onClick = { navController.navigate(ReportsPageRoute.AddReport.route) }) {
         Icon(imageVector = Icons.Rounded.Edit, contentDescription = null)
         Text(text = "Add Report")
     }
