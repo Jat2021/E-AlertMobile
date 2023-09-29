@@ -15,10 +15,10 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.e_alert.navigation.ReportsPageRoute
+import com.example.e_alert.navigation.ReportsPageScreen
 
 @Composable
-fun ReportsPage (navController : NavHostController) {
+fun ReportsPage (navController: NavHostController) {
     //displays reports only if there are any from at least 1 users
     Scaffold (
         containerColor = colorScheme.surfaceColorAtElevation(3.dp),
@@ -43,7 +43,7 @@ fun ReportsPage (navController : NavHostController) {
 fun AddReportFAB(navController: NavHostController) {
     ExtendedFloatingActionButton(
         containerColor = colorScheme.tertiaryContainer,
-        onClick = { navController.navigate(ReportsPageRoute.AddReport.route) }) {
+        onClick = { navController.navigate(ReportsPageScreen.AddReport.route) }) {
         Icon(imageVector = Icons.Rounded.Edit, contentDescription = null)
         Text(text = "Add Report")
     }
