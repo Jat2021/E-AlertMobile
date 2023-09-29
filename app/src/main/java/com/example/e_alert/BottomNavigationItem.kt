@@ -9,19 +9,19 @@ data class BottomNavigationItem(
 
 val NavItems = listOf(
     BottomNavigationItem(
-        title = MainScreen.HomePage.route,
+        title = com.example.e_alert.navigation.MainScreen.HomePage.route,
         selectedIcon = R.drawable.home_icon_filled_24dp,
         unselectedIcon = R.drawable.home_icon_outlined_24dp,
         badgeCount = null
     ),
     BottomNavigationItem(
-        title = MainScreen.ReportsPage.route,
+        title = com.example.e_alert.navigation.MainScreen.ReportsPage.route,
         selectedIcon = R.drawable.reports_icon_filled_24dp,
         unselectedIcon = R.drawable.reports_icon_outlined_24dp,
         badgeCount = null
     ),
     BottomNavigationItem(
-        title = MainScreen.RoutesPage.route,
+        title = com.example.e_alert.navigation.MainScreen.RoutesPage.route,
         selectedIcon = R.drawable.route_icon_filled_24dp,
         unselectedIcon = R.drawable.route_icon_outlined_24dp,
         badgeCount = null

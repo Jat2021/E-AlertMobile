@@ -20,18 +20,6 @@ fun TopBar() {
         title = { Text(
             //fontFamily = , TODO: Use RobotoFlex font
             text = "E-Alert") },
-        actions = {
-            TopBarAccountMenu()
-            /*IconButton(
-                colors = IconButtonDefaults
-                    .iconButtonColors(containerColor = colorScheme.primaryContainer),
-                onClick = { *//*TODO*//* }
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.AccountCircle,
-                    contentDescription = "Profile"
-                )
-            } //IconButton*/
-        } //actions
+        actions = { TopBarAccountMenu() } //actions
     )
 }
