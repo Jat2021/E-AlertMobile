@@ -17,7 +17,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,37 +29,50 @@ fun BottomNavBar (navController : NavHostController) {
         mutableIntStateOf(0)
     }
 
-    NavigationBar (
-        containerColor = colorScheme.surface,
-        tonalElevation = 3.dp
-    ) {
-        NavItems.forEachIndexed { index, item ->
-            NavigationBarItem(
-                selected = selectedItemIndex == index,
-                onClick = {
-                    selectedItemIndex = index
-                    navController.navigate(item.title)},
-                label = { Text(text = item.title) },
-                icon = {
-                    BadgedBox(
-                        badge = {
-                            if (item.badgeCount != null) {
-                                Badge {
-                                    Text(text = item.badgeCount.toString())
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+
+    val isMainScreen = NavItems.any { it.route == currentDestination?.route }
+
+    if (isMainScreen) {
+        NavigationBar(
+            containerColor = colorScheme.surface,
+            tonalElevation = 3.dp
+        ) {
+            NavItems.forEach { item ->
+                NavigationBarItem(
+                    selected = currentDestination?.hierarchy
+                        ?.any { it.route == item.route } == true,
+                    onClick = {
+                        navController.navigate(item.route) {
+                            popUpTo(navController.graph.findStartDestination().id)
+                            launchSingleTop = true
+                        }
+                    },
+                    label = { Text(text = item.title) },
+                    icon = {
+                        BadgedBox(
+                            badge = {
+                                if (item.badgeCount != null) {
+                                    Badge {
+                                        Text(text = item.badgeCount.toString())
+                                    }
                                 }
                             }
+                        ) {
+                            Icon(
+                                painterResource(
+                                    id = if (currentDestination?.hierarchy
+                                            ?.any { it.route == item.route } == true
+                                    )
+                                        item.selectedIcon
+                                    else item.unselectedIcon),
+                                contentDescription = item.title
+                            )
                         }
-                    ) {
-                        Icon(
-                            painterResource(
-                            id = if (index == selectedItemIndex)
-                                item.selectedIcon
-                            else item.unselectedIcon),
-                            contentDescription = item.title
-                        )
                     }
-                }
-            )
-        }
-    }
-}
+                )
+            }
+        } //NavigationBar
+    } //if statement
+} //BottomNavBar
