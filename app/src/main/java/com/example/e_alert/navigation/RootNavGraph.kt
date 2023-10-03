@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.e_alert.login.LoginViewModel
 import com.example.e_alert.main_screen.MainScreen
 
 object Navigation {
@@ -19,10 +20,10 @@ object Navigation {
 fun RootNavGraph (navController : NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = MainScreen.HomePage.route,
+        startDestination = Navigation.AUTH_SCREEN,
         route = Navigation.ROOT
     ) {
-        //AuthNavGraph(navController = navController)
+        authNavGraph(navController = navController, loginViewModel = LoginViewModel())
         composable(route = MainScreen.HomePage.route) {
             MainScreen()
         }
