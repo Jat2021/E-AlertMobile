@@ -1,4 +1,4 @@
-package com.example.e_alert.Repository
+package com.example.e_alert.repository
 
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth

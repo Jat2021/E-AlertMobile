@@ -6,11 +6,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.e_alert.Repository.AuthRepository
+import com.example.e_alert.repository.AuthRepository
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.setValue
-import com.google.android.play.core.integrity.e
-import com.google.firebase.ktx.Firebase
 
 class LoginViewModel(
     private val repository: AuthRepository = AuthRepository()
@@ -64,21 +62,22 @@ class LoginViewModel(
             }
             loginUiState = loginUiState.copy(signUpError = null)
             repository.createUser(loginUiState.userNameSignUp, loginUiState.passwordSignUp){
-                    isSuccessful -> if (isSuccessful){
-                Toast.makeText(
-                    context,
-                    "success login",
-                    Toast.LENGTH_SHORT
-                ).show()
-                loginUiState = loginUiState.copy(isSuccessLogin = true)
-            } else{
-                Toast.makeText(
-                    context,
-                    "Failed to login",
-                    Toast.LENGTH_SHORT
-                ).show()
-                loginUiState = loginUiState.copy(isSuccessLogin = false)
-            }
+                    isSuccessful ->
+                loginUiState = if (isSuccessful){
+                    Toast.makeText(
+                        context,
+                        "success login",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    loginUiState.copy(isSuccessLogin = true)
+                } else{
+                    Toast.makeText(
+                        context,
+                        "Failed to login",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    loginUiState.copy(isSuccessLogin = false)
+                }
             }
         }catch (e:Exception){
             loginUiState = loginUiState.copy(signUpError = e.localizedMessage)
@@ -99,23 +98,24 @@ class LoginViewModel(
                 loginUiState.userName,
                 loginUiState.password
             ){
-                    isSuccessful -> if (isSuccessful){
-                Toast.makeText(
-                    context,
-                    "success login",
-                    Toast.LENGTH_SHORT
-                ).show()
-                loginUiState = loginUiState.copy(isSuccessLogin = true)
-            } else{
-                Toast.makeText(
-                    context,
-                    "Failed to login",
-                    Toast.LENGTH_SHORT
-                ).show()
-                loginUiState = loginUiState.copy(isSuccessLogin = false)
+                    isSuccessful ->
+                loginUiState = if (isSuccessful){
+                    Toast.makeText(
+                        context,
+                        "success login",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    loginUiState.copy(isSuccessLogin = true)
+                } else{
+                    Toast.makeText(
+                        context,
+                        "Failed to login",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    loginUiState.copy(isSuccessLogin = false)
+                }
             }
-            }
-        }catch (e:Exception){
+        } catch (e:Exception){
             loginUiState = loginUiState.copy(loginError = e.localizedMessage)
             e.printStackTrace()
         }finally {

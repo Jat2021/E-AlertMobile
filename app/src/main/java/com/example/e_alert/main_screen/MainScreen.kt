@@ -40,6 +40,6 @@ fun TopBar (navController: NavHostController) {
 
     when (currentDestination?.route) {
         ReportsPageScreen.AddReport.route -> AddReportTopBar(navController = navController)
-        MainScreen.ReportsPage.route -> MainScreenTopBar()
+        else -> MainScreenTopBar()
     }
 }
