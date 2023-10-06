@@ -1,0 +1,31 @@
+package com.example.e_alert
+
+val baranggayList : List<String> = listOf(
+    "Abella",
+    "Bagumbayan Norte",
+    "Bagumbayan Sur",
+    "Balatas",
+    "Calauag",
+    "Cararayan",
+    "Carolina",
+    "Concepcion Grande",
+    "Concepcion Pequeña",
+    "Dayangdang",
+    "Del Rosario",
+    "Dinaga",
+    "Igualdad Interior",
+    "Lerma",
+    "Liboton",
+    "Mabolo",
+    "Pacol",
+    "Panicuason",
+    "Peñafrancia",
+    "Sabang",
+    "San Felipe",
+    "San Francisco",
+    "San Isidro",
+    "Santa Cruz",
+    "Tabuco",
+    "Tinago",
+    "Triangulo"
+)

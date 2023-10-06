@@ -11,7 +11,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.e_alert.BottomNavBar
-import com.example.e_alert.navigation.MainScreen
 import com.example.e_alert.navigation.MainScreenNavGraph
 import com.example.e_alert.navigation.ReportsPageScreen
 import com.example.e_alert.topbar.add_report_topbar.AddReportTopBar

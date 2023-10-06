@@ -45,7 +45,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.ui.res.stringArrayResource
 import coil.compose.AsyncImage
+import com.example.e_alert.R
+import com.example.e_alert.baranggayList
 
 @SuppressLint("RememberReturnType")
 @Composable
@@ -288,257 +291,23 @@ fun BaranggayDropdownMenu() {
             modifier = Modifier
                 .menuAnchor()
                 .fillMaxWidth(),
-            shape = MaterialTheme.shapes.small,
+            shape = MaterialTheme.shapes.small
         )
 
         ExposedDropdownMenu(
             expanded = isExpanded,
             onDismissRequest = { isExpanded = false }
         ) {
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Abella")
-                },
-                onClick = {
-                    baranggay = "Abella"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Bagumbayan Norte")
-                },
-                onClick = {
-                    baranggay = "Bagumbayan Norte"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Bagumbayan Sur")
-                },
-                onClick = {
-                    baranggay = "Bagumbayan Sur"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Balatas")
-                },
-                onClick = {
-                    baranggay = "Balatas"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Calauag")
-                },
-                onClick = {
-                    baranggay = "Calauag"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Cararayan")
-                },
-                onClick = {
-                    baranggay = "Cararayan"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Carolina")
-                },
-                onClick = {
-                    baranggay = "Carolina"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Concepcion Grande")
-                },
-                onClick = {
-                    baranggay = "Concepcion Grande"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Concepcion Pequeña")
-                },
-                onClick = {
-                    baranggay = "Concepcion Pequeña"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Dayangdang")
-                },
-                onClick = {
-                    baranggay = "Dayangdang"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Del Rosario")
-                },
-                onClick = {
-                    baranggay = "Del Rosario"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Dinaga")
-                },
-                onClick = {
-                    baranggay = "Dinaga"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Igualdad Interior")
-                },
-                onClick = {
-                    baranggay = "Igualdad Interior"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Lerma")
-                },
-                onClick = {
-                    baranggay = "Lerma"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Liboton")
-                },
-                onClick = {
-                    baranggay = "Liboton"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Mabolo")
-                },
-                onClick = {
-                    baranggay = "Mabolo"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Pacol")
-                },
-                onClick = {
-                    baranggay = "Pacol"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Panicuason")
-                },
-                onClick = {
-                    baranggay = "Panicuason"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Peñafrancia")
-                },
-                onClick = {
-                    baranggay = "Peñafrancia"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Sabang")
-                },
-                onClick = {
-                    baranggay = "Sabang"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "San Felipe")
-                },
-                onClick = {
-                    baranggay = "San Felipe"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "San Francisco")
-                },
-                onClick = {
-                    baranggay = "San Francisco"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "San Isidro")
-                },
-                onClick = {
-                    baranggay = "San Isidro"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Santa Cruz")
-                },
-                onClick = {
-                    baranggay = "Santa Cruz"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Tabuco")
-                },
-                onClick = {
-                    baranggay = "Tabuco"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Tinago")
-                },
-                onClick = {
-                    baranggay = "Tinago"
-                    isExpanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Triangulo")
-                },
-                onClick = {
-                    baranggay = "Triangulo"
-                    isExpanded = false
-                }
-            )
+            baranggayList.forEach { baranggayItem ->
+                DropdownMenuItem(
+                    text = { Text(text = baranggayItem) },
+                    onClick = {
+                        baranggay = baranggayItem
+                        isExpanded = false
+                    }
+                )
+            }
         }
-    }
+    } //ExposedDropdownMenuBox
 }
 

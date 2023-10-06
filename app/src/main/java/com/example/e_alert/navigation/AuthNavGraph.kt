@@ -15,7 +15,8 @@ sealed class AuthScreen (var route : String) {
 
 fun NavGraphBuilder.authNavGraph (
     navController : NavHostController,
-    loginViewModel : LoginViewModel) {
+    loginViewModel : LoginViewModel
+) {
     navigation (
         startDestination = AuthScreen.Login.route,
         route = Navigation.AUTH_SCREEN
