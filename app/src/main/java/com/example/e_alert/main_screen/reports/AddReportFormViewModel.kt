@@ -1,30 +1,36 @@
 package com.example.e_alert.main_screen.reports
 
 import android.net.Uri
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import androidx.lifecycle.viewModelScope
+import com.example.e_alert.repository.AuthRepository
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
 
 data class NewPost (
     var description : String = "",
     var photos : List<Uri> = emptyList(),
-    var reportType : String = "",
+    var hazardType : String = "",
     var baranggay : String = "",
     var street : String = "",
+    var coordinate : String = "",
+
+    var successfullyCreated : Boolean = false
 )
 
 sealed class Error (var message : String) {
     object EmptyDescriptionField : Error("Description is empty")
     object EmptyStreetField : Error("Street is empty")
+    object EmptyBaranggayField : Error("Baranggay is empty")
     object NoReportTypeSelected : Error("No Report Type Selected")
 }
 
 class AddReportFormViewModel : ViewModel() {
 
-    private val db = Firebase.firestore
+    private val db = FirebaseFirestore.getInstance()
 
     private var addReportFormUIState by mutableStateOf(NewPost())
 
@@ -32,8 +38,8 @@ class AddReportFormViewModel : ViewModel() {
         addReportFormUIState = addReportFormUIState.copy(description = description)
     }
 
-    fun onReportTypeFieldChange(reportType : String) {
-        addReportFormUIState = addReportFormUIState.copy(reportType = reportType)
+    fun onHazardTypeToggleChange(hazardType : String) {
+        addReportFormUIState = addReportFormUIState.copy(hazardType = hazardType)
     }
 
     fun onStreetFieldChange(street : String) {
@@ -44,7 +50,21 @@ class AddReportFormViewModel : ViewModel() {
         addReportFormUIState = addReportFormUIState.copy(baranggay = baranggay)
     }
 
-    fun createPost () {
-        db.document("")
+    fun createPost () = viewModelScope.launch {
+        db.collection("Report").add(
+            hashMapOf(
+                "User_ID" to AuthRepository().getUserId(),
+                "Report_Description" to addReportFormUIState.description,
+                "Report_Images" to addReportFormUIState.photos,
+                "Report_Hazard_Type" to addReportFormUIState.hazardType,
+                "Location" to mapOf(
+                    "Street" to addReportFormUIState.street,
+                    "Baranggay" to addReportFormUIState.baranggay,
+                    "Coordinate" to addReportFormUIState.coordinate
+                ) //mapOf
+            ) //hashMapOf
+        ) //db.collection(...).add
+            .addOnSuccessListener { addReportFormUIState.successfullyCreated = true }
+            .addOnFailureListener { addReportFormUIState.successfullyCreated = false }
     }
 }

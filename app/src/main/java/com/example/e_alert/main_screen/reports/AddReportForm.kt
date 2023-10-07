@@ -29,11 +29,11 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -45,31 +45,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import androidx.ui.res.stringArrayResource
 import coil.compose.AsyncImage
-import com.example.e_alert.R
 import com.example.e_alert.baranggayList
 
 @SuppressLint("RememberReturnType")
 @Composable
-fun AddReportForm() {
+fun AddReportForm(addReportFormViewModel: AddReportFormViewModel? = null) {
     Column(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        DetailsSection()
+        DetailsSection(addReportFormViewModel)
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        ReportTypeSection()
+        ReportTypeSection(addReportFormViewModel)
 
         Divider(
             thickness = 2.dp,
             modifier = Modifier.padding(vertical = 16.dp)
         )
 
-        LocationSection()
+        LocationSection(addReportFormViewModel)
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -82,13 +80,13 @@ fun AddReportForm() {
         Button(
             modifier =Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.small,
-            onClick = { /*TODO*/ }
+            onClick = { addReportFormViewModel?.createPost() }
         ) { Text(text = "Submit") }
     }
 } //AddReportForm()
 
 @Composable
-fun DetailsSection() {
+fun DetailsSection(addReportFormViewModel: AddReportFormViewModel? = null) {
     Column {
         var description by remember { mutableStateOf("") }
 
@@ -100,6 +98,7 @@ fun DetailsSection() {
         OutlinedTextField(
             value = description,
             onValueChange = { newDescription ->
+                addReportFormViewModel?.onDescriptionFieldChange(newDescription)
                 description = newDescription
             },
             label = { Text(text = "Description") },
@@ -113,18 +112,18 @@ fun DetailsSection() {
 } //DetailsSection
 
 @Composable
-fun ReportTypeSection() {
+fun ReportTypeSection(addReportFormViewModel: AddReportFormViewModel? = null) {
     Column {
         Text(
             style = MaterialTheme.typography.titleMedium,
             text = "Report Type"
         )
-        RadioButtons()
+        RadioButtons(addReportFormViewModel)
     }
 } //ReportTypeSection()
 
 @Composable
-fun LocationSection() {
+fun LocationSection(addReportFormViewModel: AddReportFormViewModel? = null) {
     Column {
         var streetText by remember { mutableStateOf("") }
 
@@ -153,6 +152,7 @@ fun LocationSection() {
         OutlinedTextField(
             value = streetText,
             onValueChange = { newStreet ->
+                addReportFormViewModel?.onStreetFieldChange(newStreet)
                 streetText = newStreet
             },
             label = { Text(text = "Street") },
@@ -162,7 +162,7 @@ fun LocationSection() {
             shape = MaterialTheme.shapes.small,
         )
 
-        BaranggayDropdownMenu()
+        BaranggayDropdownMenu(addReportFormViewModel)
     } //Column
 } //LocationSection()
 
@@ -218,7 +218,7 @@ data class ToggleableInfo(
 )
 
 @Composable
-private fun RadioButtons() {
+private fun RadioButtons(addReportFormViewModel: AddReportFormViewModel? = null) {
     val radioButtons = remember {
         mutableStateListOf(
             ToggleableInfo(
@@ -246,6 +246,7 @@ private fun RadioButtons() {
                                 isChecked = it.text == info.text
                             )
                         }
+                        addReportFormViewModel?.onHazardTypeToggleChange(info.text)
                     }
             ) {
                 RadioButton(
@@ -256,6 +257,7 @@ private fun RadioButtons() {
                                 isChecked = it.text == info.text
                             )
                         }
+                        addReportFormViewModel?.onHazardTypeToggleChange(info.text)
                     }
                 )
                 Text(text = info.text )
@@ -266,7 +268,7 @@ private fun RadioButtons() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BaranggayDropdownMenu() {
+fun BaranggayDropdownMenu(addReportFormViewModel: AddReportFormViewModel? = null) {
     var isExpanded by remember {
         mutableStateOf(false)
     }
@@ -281,7 +283,7 @@ fun BaranggayDropdownMenu() {
     ) {
         OutlinedTextField(
             value = baranggay,
-            onValueChange = {},
+            onValueChange = { addReportFormViewModel?.onSelectBaranggay(baranggay) },
             readOnly = true,
             trailingIcon = {
                 ExposedDropdownMenuDefaults
@@ -307,7 +309,6 @@ fun BaranggayDropdownMenu() {
                     }
                 )
             }
-        }
+        } //ExposedDropdownMenu
     } //ExposedDropdownMenuBox
 }
-
