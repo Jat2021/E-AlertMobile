@@ -7,7 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.e_alert.main_screen.home.HomePage
-import com.example.e_alert.main_screen.reports.ReportsPage
+import com.example.e_alert.main_screen.reports.AddReportFormViewModel
 import com.example.e_alert.main_screen.routes.RoutesPage
 
 sealed class MainScreen (var route : String) {
