@@ -260,7 +260,7 @@ private fun RadioButtons(addReportFormViewModel: AddReportFormViewModel? = null)
                         addReportFormViewModel?.onHazardTypeToggleChange(info.text)
                     }
                 )
-                Text(text = info.text )
+                Text(text = info.text)
             }
         }
     } //Row
@@ -268,7 +268,7 @@ private fun RadioButtons(addReportFormViewModel: AddReportFormViewModel? = null)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BaranggayDropdownMenu(addReportFormViewModel: AddReportFormViewModel? = null) {
+fun BaranggayDropdownMenu(addReportFormViewModel : AddReportFormViewModel? = null) {
     var isExpanded by remember {
         mutableStateOf(false)
     }
@@ -279,7 +279,7 @@ fun BaranggayDropdownMenu(addReportFormViewModel: AddReportFormViewModel? = null
 
     ExposedDropdownMenuBox(
         expanded = isExpanded ,
-        onExpandedChange = {isExpanded = it}
+        onExpandedChange = { isExpanded = it }
     ) {
         OutlinedTextField(
             value = baranggay,
@@ -305,6 +305,7 @@ fun BaranggayDropdownMenu(addReportFormViewModel: AddReportFormViewModel? = null
                     text = { Text(text = baranggayItem) },
                     onClick = {
                         baranggay = baranggayItem
+                        addReportFormViewModel?.onSelectBaranggay(baranggay)
                         isExpanded = false
                     }
                 )

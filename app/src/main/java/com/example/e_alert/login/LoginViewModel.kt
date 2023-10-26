@@ -104,11 +104,12 @@ class LoginViewModel(
         db.collection("User")
             .document(repository.getUserId()).set(
                 hashMapOf(
-                    "firstName" to loginUiState.firstName,
-                    "lastName" to loginUiState.lastName,
-                    "street" to loginUiState.street,
-                    "baranggay" to loginUiState.baranggay,
-                    "phoneNumber" to loginUiState.phoneNumber,
+                    "User_Type" to "PUBLIC",
+                    "First_Name" to loginUiState.firstName,
+                    "Last_Name" to loginUiState.lastName,
+                    "Street" to loginUiState.street,
+                    "Baranggay" to loginUiState.baranggay,
+                    "Phone_Number" to loginUiState.phoneNumber,
                 )
             )
     } //createUserDocumentInDB

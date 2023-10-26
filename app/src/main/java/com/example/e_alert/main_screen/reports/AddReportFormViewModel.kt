@@ -16,7 +16,8 @@ data class NewPost (
     var hazardType : String = "",
     var baranggay : String = "",
     var street : String = "",
-    var coordinate : String = "",
+    var latitude : Float = 0.0f,
+    var longitude : Float = 0.0f,
 
     var successfullyCreated : Boolean = false
 )
@@ -57,11 +58,10 @@ class AddReportFormViewModel : ViewModel() {
                 "Report_Description" to addReportFormUIState.description,
                 "Report_Images" to addReportFormUIState.photos,
                 "Report_Hazard_Type" to addReportFormUIState.hazardType,
-                "Location" to mapOf(
-                    "Street" to addReportFormUIState.street,
-                    "Baranggay" to addReportFormUIState.baranggay,
-                    "Coordinate" to addReportFormUIState.coordinate
-                ) //mapOf
+                "Street" to addReportFormUIState.street,
+                "Baranggay" to addReportFormUIState.baranggay,
+                "Latitude" to addReportFormUIState.latitude,
+                "Longitude" to addReportFormUIState.longitude
             ) //hashMapOf
         ) //db.collection(...).add
             .addOnSuccessListener { addReportFormUIState.successfullyCreated = true }

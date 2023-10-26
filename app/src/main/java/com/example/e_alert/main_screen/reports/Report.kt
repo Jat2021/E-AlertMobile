@@ -1,5 +1,6 @@
 package com.example.e_alert.main_screen.reports
 
+import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -46,41 +47,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.e_alert.R
-
-data class User(
-    val name : String,
-    @DrawableRes val profilePhoto : Int,
-)
-
-/**************[ PREVIEW ]****************************/
-@Preview
-@Composable
-fun Preview () {
-    Report(
-        ReportData(
-            user = User(
-            name = "Justin Glen Vasquez",
-            profilePhoto = R.drawable.profile_photo_placeholder_foreground
-        ),
-        timestamp = "2 mins. ago",
-        images = listOf(
-            R.drawable.flooded_area_1,
-            R.drawable.flooded_area_2,
-            R.drawable.flooded_area_3,
-        ),
-        reportType = "Flood",
-        reportLocation = "Sta. Cruz",
-        reportDescription = "Baha na po dito sa may Sta. Cruz, Ateneo Gate")
-    )
-}
-/*****************************************************/
+import coil.compose.AsyncImage
 
 @Composable
-fun Report (contents : ReportData) {
+fun Report (data : ReportData) {
     Card (
         modifier = Modifier.height(IntrinsicSize.Min),
         shape = RectangleShape,
@@ -90,8 +62,11 @@ fun Report (contents : ReportData) {
     ) {
         Column (Modifier.fillMaxWidth()
         ) {
-            Header(user = contents.user, timePosted = contents.timestamp)
-            if (contents.images != null) ReportPhotos(images = contents.images)
+            Header(
+                user = data.user,
+                timePosted = "<timestamp here>"
+            )
+            if (data.images != null) ReportPhotos(images = data.images)
 
             Column (Modifier.padding(
                 start = 16.dp, top = 16.dp, end = 16.dp)
@@ -101,15 +76,17 @@ fun Report (contents : ReportData) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    ReportTypeLabel(contents.reportType)
-                    ReportLocationLabel(reportLocation = contents.reportLocation)
+                    ReportTypeLabel(data.reportType)
+                    ReportLocationLabel(
+                        reportLocation = "${data.reportLocation.baranggay}, " +
+                                data.reportLocation.street)
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-                ReportDescription(text = contents.reportDescription)
+                ReportDescription(text = data.reportDescription)
 
                 Spacer(modifier = Modifier.height(16.dp))
-                LikesAndDislikes(contents.numberOfLikes, contents.numberOfDislikes)
+                LikesAndDislikes(data.numberOfLikes, data.numberOfDislikes)
             } //Column
         } //Column
     }
@@ -123,12 +100,12 @@ fun Header (user : User, timePosted: String) {
         .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween) {
         Row {
-            Image(
+            AsyncImage(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(color = MaterialTheme.colorScheme.secondary),
-                painter = painterResource(id = user.profilePhoto),
+                    .background(color = colorScheme.secondary),
+                model = user.profilePhoto,
                 contentDescription = null
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -136,7 +113,8 @@ fun Header (user : User, timePosted: String) {
                 Text(
                     color = colorScheme.onBackground,
                     style = typography.titleMedium,
-                    text = user.name)
+                    text = user.firstName
+                )
                 Text(
                     color = colorScheme.onSurfaceVariant,
                     style = typography.titleSmall,
@@ -155,7 +133,7 @@ fun Header (user : User, timePosted: String) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ReportPhotos (@DrawableRes images : List<Int>) {
+fun ReportPhotos (images : List<Uri>) {
     //TODO: Includes photos coming from the the user (from DB)
 
     val pagerState = rememberPagerState { images.size }
@@ -168,8 +146,8 @@ fun ReportPhotos (@DrawableRes images : List<Int>) {
             modifier = Modifier,
             state = pagerState
         ) { index ->
-            Image(
-                painter = painterResource(id = images[index]),
+            AsyncImage(
+                model = images[index],
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -182,25 +160,23 @@ fun ReportPhotos (@DrawableRes images : List<Int>) {
             contentAlignment = Alignment.TopEnd
         ) {
             Row {
-                val pageCounter = "${pagerState.settledPage+1} / ${pagerState.pageCount}"
+                val pageCounter = "${ pagerState.settledPage + 1 } / ${ pagerState.pageCount }"
 
                 Surface(
                     modifier = Modifier,
-                    shape = MaterialTheme.shapes.small,
-                    color = MaterialTheme.colorScheme.inverseSurface.copy(0.9f)
+                    shape = shapes.small,
+                    color = colorScheme.inverseSurface.copy(0.9f)
                 ) {
                     Text(
                         modifier = Modifier.padding(8.dp, 4.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.inverseOnSurface,
+                        style = typography.labelMedium,
+                        color = colorScheme.inverseOnSurface,
                         text = pageCounter
                     )
                 }
             }
         } //Row
     } //Box
-
-
 }
 
 @Composable
