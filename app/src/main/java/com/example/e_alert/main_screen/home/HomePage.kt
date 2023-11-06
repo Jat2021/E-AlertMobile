@@ -14,7 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import com.example.e_alert.BottomSheet
+import com.example.e_alert.shared_viewModel.SharedViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -23,22 +25,8 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
-fun HomePage () {
-    val nagaCity = LatLng(13.621775, 123.194824)
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(nagaCity, 14f)
-    }
-    GoogleMap(
-        modifier = Modifier.fillMaxSize(),
-        cameraPositionState = cameraPositionState
-    ) {
-        Marker(
-            state = MarkerState(position = nagaCity),
-            title = "Naga City, Camarines Sur",
-            snippet = "City of Naga"
-        )
-    }
-
+fun HomePage (sharedViewModel : SharedViewModel) {
+    Map()
     BottomSheetHome()
 }
 
@@ -104,6 +92,25 @@ fun BottomSheetHome () {
                 )
             }
         }
+    }
+}
+
+@Composable
+fun Map () {
+    val nagaCity = LatLng(13.621775, 123.194824)
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(nagaCity, 14f)
+    }
+
+    GoogleMap(
+        modifier = Modifier.fillMaxSize(),
+        cameraPositionState = cameraPositionState
+    ) {
+        Marker(
+            state = MarkerState(position = nagaCity),
+            title = "Naga City, Camarines Sur",
+            snippet = "City of Naga"
+        )
     }
 }
 

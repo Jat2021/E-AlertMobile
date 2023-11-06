@@ -6,8 +6,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.example.e_alert.main_screen.reports.AddReportForm
 import com.example.e_alert.main_screen.reports.AddReportFormViewModel
-
 import com.example.e_alert.main_screen.reports.ReportsPage
+import com.example.e_alert.shared_viewModel.SharedViewModel
 
 sealed class ReportsPageScreen (var route : String) {
     object AddReport : ReportsPageScreen("Add Report")
@@ -21,9 +21,11 @@ fun NavGraphBuilder.reportsPageNavGraph (
         route = Navigation.REPORTS_PAGE
     ) {
         composable(route = MainScreen.ReportsPage.route) {
-            ReportsPage(navController = navController)
+            val sharedViewModel = it.sharedViewModel<SharedViewModel>(navController = navController)
+            ReportsPage(sharedViewModel = sharedViewModel, navController = navController)
         }
         composable(route = ReportsPageScreen.AddReport.route) {
+            val sharedViewModel = it.sharedViewModel<SharedViewModel>(navController = navController)
             AddReportForm(addReportFormViewModel = AddReportFormViewModel())
         }
     }

@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun TopBarAccountMenu () {
@@ -54,7 +55,7 @@ fun TopBarAccountMenu () {
                     leadingIconColor = colorScheme.error,
                     textColor = colorScheme.error
                 ),
-                onClick = { /*Firebase.auth.signout*/ }
+                onClick = { FirebaseAuth.getInstance().signOut() }
             )
         }
     } //Box

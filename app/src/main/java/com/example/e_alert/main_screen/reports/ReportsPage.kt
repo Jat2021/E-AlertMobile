@@ -14,28 +14,26 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.example.e_alert.navigation.ReportsPageScreen
-import kotlinx.coroutines.launch
+import com.example.e_alert.shared_viewModel.SharedViewModel
 
 @Composable
-fun ReportsPage (navController: NavHostController) {
-    val reportsPageViewModel = ReportsPageViewModel()
+fun ReportsPage (sharedViewModel : SharedViewModel, navController : NavHostController) {
+    val reportsPageViewModel = ReportsPageViewModel(sharedViewModel)
 
     Scaffold (
         containerColor = colorScheme.surfaceColorAtElevation(3.dp),
         floatingActionButton = { AddReportFAB(navController) },
         floatingActionButtonPosition = FabPosition.End
     ) { paddingValues ->
-        reportsPageViewModel.getAllReports()
+        reportsPageViewModel.getReportsList()
 
         LazyColumn(
             contentPadding = paddingValues,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(items = reportsPageViewModel.allReportsListState) { reportData ->
+            items(items = reportsPageViewModel.getReportsList()) { reportData ->
                 Report(data = reportData)
             } //items
         } //LazyColumn

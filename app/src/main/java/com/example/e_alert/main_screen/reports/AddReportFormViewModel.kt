@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.e_alert.repository.AuthRepository
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.type.LatLng
 import kotlinx.coroutines.launch
 
 data class NewPost (
@@ -18,6 +19,7 @@ data class NewPost (
     var street : String = "",
     var latitude : Float = 0.0f,
     var longitude : Float = 0.0f,
+    val isVerified : Boolean = false,
 
     var successfullyCreated : Boolean = false
 )
@@ -34,6 +36,8 @@ class AddReportFormViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
     private var addReportFormUIState by mutableStateOf(NewPost())
+
+    var pinLocationState by mutableStateOf(LatLng.getDefaultInstance())
 
     fun onDescriptionFieldChange(description : String) {
         addReportFormUIState = addReportFormUIState.copy(description = description)
@@ -61,7 +65,8 @@ class AddReportFormViewModel : ViewModel() {
                 "Street" to addReportFormUIState.street,
                 "Baranggay" to addReportFormUIState.baranggay,
                 "Latitude" to addReportFormUIState.latitude,
-                "Longitude" to addReportFormUIState.longitude
+                "Longitude" to addReportFormUIState.longitude,
+                "IsVerified" to addReportFormUIState.isVerified
             ) //hashMapOf
         ) //db.collection(...).add
             .addOnSuccessListener { addReportFormUIState.successfullyCreated = true }

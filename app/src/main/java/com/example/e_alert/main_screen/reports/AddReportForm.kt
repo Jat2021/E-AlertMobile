@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -47,6 +48,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.e_alert.baranggayList
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 
 @SuppressLint("RememberReturnType")
 @Composable
@@ -127,6 +134,8 @@ fun LocationSection(addReportFormViewModel: AddReportFormViewModel? = null) {
     Column {
         var streetText by remember { mutableStateOf("") }
 
+        Map()
+
         Row (
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.Bottom,
@@ -165,6 +174,23 @@ fun LocationSection(addReportFormViewModel: AddReportFormViewModel? = null) {
         BaranggayDropdownMenu(addReportFormViewModel)
     } //Column
 } //LocationSection()
+
+@Composable
+fun Map () {
+    val nagaCity = LatLng(13.621775, 123.194824)
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(nagaCity, 14f)
+    }
+
+    GoogleMap(
+        modifier = Modifier.fillMaxSize(),
+        cameraPositionState = cameraPositionState
+    ) {
+        Marker(
+            state = MarkerState(position = cameraPositionState.position.target)
+        )
+    }
+}
 
 @Composable
 fun SelectPhoto() {
