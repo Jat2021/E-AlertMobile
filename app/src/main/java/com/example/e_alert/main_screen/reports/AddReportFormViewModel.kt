@@ -7,8 +7,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.e_alert.repository.AuthRepository
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.type.LatLng
+import com.google.firebase.firestore.GeoPoint
+import com.google.maps.android.compose.CameraPositionState
 import kotlinx.coroutines.launch
 
 data class NewPost (
@@ -17,8 +19,7 @@ data class NewPost (
     var hazardType : String = "",
     var baranggay : String = "",
     var street : String = "",
-    var latitude : Float = 0.0f,
-    var longitude : Float = 0.0f,
+    var coordinates : GeoPoint = GeoPoint(0.0, 0.0),
     val isVerified : Boolean = false,
 
     var successfullyCreated : Boolean = false
@@ -37,7 +38,10 @@ class AddReportFormViewModel : ViewModel() {
 
     private var addReportFormUIState by mutableStateOf(NewPost())
 
-    var pinLocationState by mutableStateOf(LatLng.getDefaultInstance())
+    var pinnedLocationState by mutableStateOf(LatLng(13.621775, 123.194824))
+
+    lateinit var cameraPositionState : CameraPositionState
+    var isScrollEnabled by mutableStateOf(true)
 
     fun onDescriptionFieldChange(description : String) {
         addReportFormUIState = addReportFormUIState.copy(description = description)
@@ -64,12 +68,13 @@ class AddReportFormViewModel : ViewModel() {
                 "Report_Hazard_Type" to addReportFormUIState.hazardType,
                 "Street" to addReportFormUIState.street,
                 "Baranggay" to addReportFormUIState.baranggay,
-                "Latitude" to addReportFormUIState.latitude,
-                "Longitude" to addReportFormUIState.longitude,
+                "Coordinates" to addReportFormUIState.coordinates,
                 "IsVerified" to addReportFormUIState.isVerified
             ) //hashMapOf
         ) //db.collection(...).add
             .addOnSuccessListener { addReportFormUIState.successfullyCreated = true }
             .addOnFailureListener { addReportFormUIState.successfullyCreated = false }
     }
-}
+
+
+} //class AddReportFormViewModel

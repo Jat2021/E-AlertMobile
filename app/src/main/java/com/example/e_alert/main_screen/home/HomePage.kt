@@ -31,6 +31,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @Composable
 fun HomePage () {
     val sharedViewModel : SharedViewModel = viewModel(LocalContext.current as ComponentActivity)
+
     Map()
     BottomSheetHome()
 }

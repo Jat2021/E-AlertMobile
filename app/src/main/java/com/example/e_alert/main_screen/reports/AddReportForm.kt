@@ -2,11 +2,13 @@ package com.example.e_alert.main_screen.reports
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.view.MotionEvent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,18 +23,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AddPhotoAlternate
+import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.MyLocation
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.OutlinedButton
@@ -41,14 +42,18 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -57,20 +62,30 @@ import com.example.e_alert.baranggayList
 import com.example.e_alert.navigation.MainScreen
 import com.example.e_alert.navigation.Navigation
 import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
 
 @SuppressLint("RememberReturnType")
 @Composable
 fun AddReportForm(addReportFormViewModel: AddReportFormViewModel? = null,
       navController : NavHostController) {
+    val pinnedLocation = addReportFormViewModel!!.pinnedLocationState
+
+    addReportFormViewModel.cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(pinnedLocation, 14f)
+    }
+
+    LaunchedEffect(addReportFormViewModel.cameraPositionState.isMoving) {
+        if(!addReportFormViewModel.cameraPositionState.isMoving)
+            addReportFormViewModel.isScrollEnabled = true
+    }
+
     Column(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState(), addReportFormViewModel.isScrollEnabled),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         DetailsSection(addReportFormViewModel)
@@ -98,7 +113,7 @@ fun AddReportForm(addReportFormViewModel: AddReportFormViewModel? = null,
             modifier =Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.small,
             onClick = {
-                addReportFormViewModel?.createPost()
+                addReportFormViewModel.createPost()
                 navController.navigate(Navigation.REPORTS_PAGE) {
                     launchSingleTop = true
                     popUpTo(MainScreen.ReportsPage.route)
@@ -150,30 +165,13 @@ fun LocationSection(addReportFormViewModel: AddReportFormViewModel? = null) {
     Column {
         var streetText by remember { mutableStateOf("") }
 
-        LocationOnMap()
+        LocationOnMap(addReportFormViewModel)
 
-        Row (
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                style = MaterialTheme.typography.titleMedium,
-                text = "Location"
-            )
+        Text(
+            style = MaterialTheme.typography.titleMedium,
+            text = "Location"
+        )
 
-            TextButton(
-                shape = MaterialTheme.shapes.small,
-                onClick = { /*TODO: Get Current Location coordinates and equivalent address*/ },
-                colors = ButtonDefaults.buttonColors(contentColor = colorScheme.tertiary)
-            ) {
-                Text(text = "Use my current location")
-                Icon(
-                    imageVector = Icons.Rounded.MyLocation,
-                    contentDescription = "Use my current location"
-                )
-            }
-        }
         OutlinedTextField(
             value = streetText,
             onValueChange = { newStreet ->
@@ -184,27 +182,73 @@ fun LocationSection(addReportFormViewModel: AddReportFormViewModel? = null) {
             maxLines = 2,
             modifier = Modifier
                 .fillMaxWidth(),
-            shape = MaterialTheme.shapes.small,
+            shape = MaterialTheme.shapes.small
         )
 
         BaranggayDropdownMenu(addReportFormViewModel)
     } //Column
 } //LocationSection()
 
+@OptIn(FlowPreview::class, ExperimentalComposeUiApi::class)
 @Composable
-fun LocationOnMap () {
-    val nagaCity = LatLng(13.621775, 123.194824)
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(nagaCity, 14f)
+fun LocationOnMap (addReportFormViewModel: AddReportFormViewModel?) {
+    LaunchedEffect(addReportFormViewModel!!.cameraPositionState) {
+        snapshotFlow { addReportFormViewModel.cameraPositionState.position.target }
+            .debounce(200)
+            .collect { newPosition -> addReportFormViewModel.pinnedLocationState = newPosition }
     }
 
-    GoogleMap(
-        modifier = Modifier.fillMaxSize(),
-        cameraPositionState = cameraPositionState
+    Column (
+        horizontalAlignment = Alignment.End
     ) {
-        Marker(
-            state = MarkerState(position = cameraPositionState.position.target)
-        )
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            GoogleMap(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInteropFilter(onTouchEvent = {
+                        when (it.action) {
+                            MotionEvent.ACTION_DOWN -> {
+                                addReportFormViewModel.isScrollEnabled = false
+                                false
+                            }
+
+                            else -> {
+                                addReportFormViewModel.isScrollEnabled = true
+                                true
+                            }
+                        }
+                    }),
+                cameraPositionState = addReportFormViewModel.cameraPositionState
+            )
+
+            IconButton(onClick = {  }) {
+                Icon(
+                    imageVector = Icons.Rounded.LocationOn,
+                    contentDescription = null
+                )
+            }
+        } //Box
+
+        Text(text = "Camera is moving: ${addReportFormViewModel.cameraPositionState.isMoving}")
+        Text(text = "Coordinates: Lat: ${addReportFormViewModel.cameraPositionState.position.target.latitude}\n" +
+                "Long: ${addReportFormViewModel.cameraPositionState.position.target.longitude}")
+        TextButton(
+            shape = MaterialTheme.shapes.small,
+            onClick = { /*TODO: Get Current Location coordinates and equivalent address*/ },
+        ) {
+            Text(
+                color = colorScheme.tertiary,
+                text = "Use my current location"
+            )
+            Icon(
+                imageVector = Icons.Rounded.MyLocation,
+                tint = colorScheme.tertiary,
+                contentDescription = "Use my current location"
+            )
+        }
     }
 }
 
