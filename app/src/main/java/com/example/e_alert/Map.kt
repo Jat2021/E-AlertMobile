@@ -5,5 +5,5 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun Map (modifier: Modifier = Modifier) {
-    //Google Map API goes here
+    //Google LocationOnMap API goes here
 }

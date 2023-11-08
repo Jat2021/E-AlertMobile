@@ -37,7 +37,7 @@ import com.example.e_alert.shared_viewModel.SharedViewModel
 //)
 
 class ReportsPageViewModel(sharedViewModel : SharedViewModel) : ViewModel() {
-    private val reportsListState = sharedViewModel.reportsListState
+    val reportsListState = sharedViewModel.reportsListState
 
     fun getReportsList() : MutableList<ReportData> {
         return reportsListState

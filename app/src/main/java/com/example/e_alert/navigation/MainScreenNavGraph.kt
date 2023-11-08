@@ -1,9 +1,11 @@
 package com.example.e_alert.navigation
 
+import androidx.activity.ComponentActivity
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
@@ -30,14 +32,11 @@ fun MainScreenNavGraph(navController : NavHostController) {
         exitTransition = { ExitTransition.None }
     ) {
         composable(route = MainScreen.HomePage.route) {
-            val sharedViewModel = it.sharedViewModel<SharedViewModel>(navController = navController)
-            sharedViewModel.retrieveReportsFromDB()
-            HomePage(sharedViewModel)
+            HomePage()
         }
         reportsPageNavGraph(navController = navController)
         composable(route = MainScreen.RoutesPage.route) {
-            val sharedViewModel = it.sharedViewModel<SharedViewModel>(navController = navController)
-            RoutesPage(sharedViewModel)
+            RoutesPage()
         }
     }
 }

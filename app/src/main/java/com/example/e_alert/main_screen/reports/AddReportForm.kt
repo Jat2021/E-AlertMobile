@@ -16,10 +16,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AddPhotoAlternate
 import androidx.compose.material.icons.rounded.MyLocation
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +39,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -46,8 +51,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.e_alert.baranggayList
+import com.example.e_alert.navigation.MainScreen
+import com.example.e_alert.navigation.Navigation
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -57,10 +65,12 @@ import com.google.maps.android.compose.rememberCameraPositionState
 
 @SuppressLint("RememberReturnType")
 @Composable
-fun AddReportForm(addReportFormViewModel: AddReportFormViewModel? = null) {
+fun AddReportForm(addReportFormViewModel: AddReportFormViewModel? = null,
+      navController : NavHostController) {
     Column(
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         DetailsSection(addReportFormViewModel)
@@ -87,7 +97,13 @@ fun AddReportForm(addReportFormViewModel: AddReportFormViewModel? = null) {
         Button(
             modifier =Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.small,
-            onClick = { addReportFormViewModel?.createPost() }
+            onClick = {
+                addReportFormViewModel?.createPost()
+                navController.navigate(Navigation.REPORTS_PAGE) {
+                    launchSingleTop = true
+                    popUpTo(MainScreen.ReportsPage.route)
+                }
+            }
         ) { Text(text = "Submit") }
     }
 } //AddReportForm()
@@ -134,7 +150,7 @@ fun LocationSection(addReportFormViewModel: AddReportFormViewModel? = null) {
     Column {
         var streetText by remember { mutableStateOf("") }
 
-        Map()
+        LocationOnMap()
 
         Row (
             modifier = Modifier.fillMaxWidth(),
@@ -143,15 +159,15 @@ fun LocationSection(addReportFormViewModel: AddReportFormViewModel? = null) {
         ) {
             Text(
                 style = MaterialTheme.typography.titleMedium,
-                text = "Location")
+                text = "Location"
+            )
 
-            FilledTonalIconButton(
+            TextButton(
                 shape = MaterialTheme.shapes.small,
-                onClick = {/*TODO*/ },
-                colors = IconButtonDefaults
-                    .filledIconButtonColors(
-                        containerColor = colorScheme.tertiaryContainer)
+                onClick = { /*TODO: Get Current Location coordinates and equivalent address*/ },
+                colors = ButtonDefaults.buttonColors(contentColor = colorScheme.tertiary)
             ) {
+                Text(text = "Use my current location")
                 Icon(
                     imageVector = Icons.Rounded.MyLocation,
                     contentDescription = "Use my current location"
@@ -176,7 +192,7 @@ fun LocationSection(addReportFormViewModel: AddReportFormViewModel? = null) {
 } //LocationSection()
 
 @Composable
-fun Map () {
+fun LocationOnMap () {
     val nagaCity = LatLng(13.621775, 123.194824)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(nagaCity, 14f)
@@ -203,7 +219,10 @@ fun SelectPhoto() {
         onResult = { uris -> selectedImageUris = uris}
     )
 
-    LazyColumn {
+    LazyColumn (
+        modifier = Modifier.height(64.dp),
+        state = rememberLazyListState()
+    ) {
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -227,6 +246,7 @@ fun SelectPhoto() {
                 }
             }
         }
+
         items(selectedImageUris) { uri ->
             AsyncImage(
                 model = uri,

@@ -82,23 +82,16 @@ class SharedViewModel : ViewModel() {
 
     fun retrieveReportsFromDB() {
         viewModelScope.launch {
-            lateinit var author : User
-
-            db.collection("User").document(AuthRepository().getUserId())
-                .get().addOnSuccessListener { userData ->
-                    author = User(
-                        firstName = userData["First_Name"].toString(),
-                        lastName = userData["Last_Name"].toString(),
-                        profilePhoto = /*user["Profile_Photo"] as Uri*/ null
-                    )
-                }
-
             db.collection("Report").get()
                 .addOnSuccessListener { result ->
                     for (reportDocument in result) {
                         reportsListState.add(
                             ReportData(
-                                user = author,
+                                user = User(
+                                    firstName = "Justin",
+                                    lastName = "Vasquez",
+                                    profilePhoto = null
+                                ),
                                 images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
                                 reportType = reportDocument["Report_Hazard_Type"].toString(),
                                 reportDescription = reportDocument["Report_Description"].toString(),
@@ -109,7 +102,7 @@ class SharedViewModel : ViewModel() {
                                     longitude = /*reportDocument["Longitude"] as Float*/ 0.0f
                                 ),
                                 numberOfDislikes = 0,
-                                numberOfLikes = 0,
+                                numberOfLikes = 0
                                 //isVerified = false
                             )
                         )
@@ -119,6 +112,40 @@ class SharedViewModel : ViewModel() {
         } //viewModelScope.lunch
     } //fun retrieveReportsFromDB
 
+//    db.collection("Report").get()
+//    .addOnSuccessListener { result ->
+//        for (reportDocument in result) {
+//            //var author : User? = null
+//
+//            db.collection("User").document(reportDocument["User_ID"].toString())
+//                .get().addOnSuccessListener { userData ->
+//                    reportsListState.add(
+//                        ReportData(
+//                            user = User(
+//                                firstName = userData["First_Name"].toString(),
+//                                lastName = userData["Last_Name"].toString(),
+//                                profilePhoto = userData["Profile_Photo"] as Uri?
+//                            ),
+//                            images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
+//                            reportType = reportDocument["Report_Hazard_Type"].toString(),
+//                            reportDescription = reportDocument["Report_Description"].toString(),
+//                            reportLocation = Location(
+//                                street = reportDocument["Street"].toString(),
+//                                baranggay = reportDocument["Baranggay"].toString(),
+//                                latitude = /*reportDocument["Latitude"] as Float*/ 0.0f,
+//                                longitude = /*reportDocument["Longitude"] as Float*/ 0.0f
+//                            ),
+//                            numberOfDislikes = 0,
+//                            numberOfLikes = 0
+//                            //isVerified = false
+//                        )
+//                    )
+//                }
+//
+//
+//        } //result.forEach
+//        //allReportsList = reportsListState
+//    } //.addOnSuccessListener
 
     // TODO: List of Hazard (retrieve)
 

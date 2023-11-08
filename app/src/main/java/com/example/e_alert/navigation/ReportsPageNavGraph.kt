@@ -1,5 +1,8 @@
 package com.example.e_alert.navigation
 
+import androidx.activity.ComponentActivity
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
@@ -21,12 +24,11 @@ fun NavGraphBuilder.reportsPageNavGraph (
         route = Navigation.REPORTS_PAGE
     ) {
         composable(route = MainScreen.ReportsPage.route) {
-            val sharedViewModel = it.sharedViewModel<SharedViewModel>(navController = navController)
+            val sharedViewModel : SharedViewModel = viewModel(LocalContext.current as ComponentActivity)
             ReportsPage(sharedViewModel = sharedViewModel, navController = navController)
         }
         composable(route = ReportsPageScreen.AddReport.route) {
-            val sharedViewModel = it.sharedViewModel<SharedViewModel>(navController = navController)
-            AddReportForm(addReportFormViewModel = AddReportFormViewModel())
+            AddReportForm(addReportFormViewModel = AddReportFormViewModel(), navController = navController)
         }
     }
 }

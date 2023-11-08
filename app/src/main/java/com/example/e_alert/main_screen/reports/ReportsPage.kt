@@ -1,5 +1,6 @@
 package com.example.e_alert.main_screen.reports
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,21 +21,18 @@ import com.example.e_alert.shared_viewModel.SharedViewModel
 
 @Composable
 fun ReportsPage (sharedViewModel : SharedViewModel, navController : NavHostController) {
-    val reportsPageViewModel = ReportsPageViewModel(sharedViewModel)
-
     Scaffold (
         containerColor = colorScheme.surfaceColorAtElevation(3.dp),
         floatingActionButton = { AddReportFAB(navController) },
         floatingActionButtonPosition = FabPosition.End
     ) { paddingValues ->
-        reportsPageViewModel.getReportsList()
-
         LazyColumn(
             contentPadding = paddingValues,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(items = reportsPageViewModel.getReportsList()) { reportData ->
+            items(items = sharedViewModel.reportsListState) { reportData ->
                 Report(data = reportData)
+
             } //items
         } //LazyColumn
     } //Scaffold
