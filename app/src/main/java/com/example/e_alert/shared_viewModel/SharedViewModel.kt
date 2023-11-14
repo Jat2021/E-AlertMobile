@@ -22,8 +22,8 @@ data class ReportData(
     val reportLocation : Location = Location(
         street = "",
         baranggay = "",
-        latitude = 0.0f,
-        longitude = 0.0f
+        latitude = 0.0,
+        longitude = 0.0
     ),
     val reportDescription : String = "",
     val numberOfLikes : Int = 0,
@@ -97,8 +97,8 @@ class SharedViewModel : ViewModel() {
                                 reportLocation = Location(
                                     street = reportDocument["Street"].toString(),
                                     baranggay = reportDocument["Baranggay"].toString(),
-                                    latitude = /*reportDocument["Latitude"] as Float*/ 0.0f,
-                                    longitude = /*reportDocument["Longitude"] as Float*/ 0.0f
+                                    latitude = reportDocument["Latitude"] as Double,
+                                    longitude = reportDocument["Longitude"] as Double
                                 ),
                                 numberOfDislikes = 0,
                                 numberOfLikes = 0
