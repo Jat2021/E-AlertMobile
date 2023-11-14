@@ -6,10 +6,9 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.android.gms.location.FusedLocationProviderClient
-import kotlinx.coroutines.launch
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 
 data class ReportData(
     val user : User = User(
@@ -22,8 +21,7 @@ data class ReportData(
     val reportLocation : Location = Location(
         street = "",
         baranggay = "",
-        latitude = 0.0,
-        longitude = 0.0
+        coordinates = GeoPoint(0.0,0.0)
     ),
     val reportDescription : String = "",
     val numberOfLikes : Int = 0,
@@ -40,8 +38,7 @@ data class User(
 data class Location(
     val street: String,
     val baranggay: String,
-    val latitude: Double,
-    val longitude: Double
+    val coordinates: GeoPoint
 )
 
 class SharedViewModel : ViewModel() {
@@ -80,71 +77,31 @@ class SharedViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
     fun retrieveReportsFromDB() {
-        viewModelScope.launch {
-            db.collection("Report").get()
-                .addOnSuccessListener { result ->
-                    for (reportDocument in result) {
-                        reportsListState.add(
-                            ReportData(
-                                user = User(
-                                    firstName = "Justin",
-                                    lastName = "Vasquez",
-                                    profilePhoto = null
-                                ),
-                                images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
-                                reportType = reportDocument["Report_Hazard_Type"].toString(),
-                                reportDescription = reportDocument["Report_Description"].toString(),
-                                reportLocation = Location(
-                                    street = reportDocument["Street"].toString(),
-                                    baranggay = reportDocument["Baranggay"].toString(),
-                                    latitude = reportDocument["Latitude"] as Double,
-                                    longitude = reportDocument["Longitude"] as Double
-                                ),
-                                numberOfDislikes = 0,
-                                numberOfLikes = 0
-                                //hazardStatus = false
-                            )
-                        )
-                    } //result.forEach
-                    //allReportsList = reportsListState
-                } //.addOnSuccessListener
-        } //viewModelScope.lunch
+        db.collection("Report").document()
+            .addSnapshotListener { reportDocument, e ->
+                reportsListState.add(
+                    ReportData(
+                        user = User(
+                            firstName = "Justin",
+                            lastName = "Vasquez",
+                            profilePhoto = null
+                        ),
+                        images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
+                        reportType = reportDocument!!["Report_Hazard_Type"].toString(),
+                        reportDescription = reportDocument["Report_Description"].toString(),
+                        reportLocation = Location(
+                            street = reportDocument["Street"].toString(),
+                            baranggay = reportDocument["Baranggay"].toString(),
+                            coordinates = /*reportDocument["Coordinates"] as GeoPoint*/ GeoPoint(0.0,0.0),
+                        ),
+                        numberOfDislikes = 0,
+                        numberOfLikes = 0
+                        //hazardStatus = false
+                    )
+                )
+                //allReportsList = reportsListState
+            } //.addOnSuccessListener
     } //fun retrieveReportsFromDB
-
-//    db.collection("Report").get()
-//    .addOnSuccessListener { result ->
-//        for (reportDocument in result) {
-//            //var author : User? = null
-//
-//            db.collection("User").document(reportDocument["User_ID"].toString())
-//                .get().addOnSuccessListener { userData ->
-//                    reportsListState.add(
-//                        ReportData(
-//                            user = User(
-//                                firstName = userData["First_Name"].toString(),
-//                                lastName = userData["Last_Name"].toString(),
-//                                profilePhoto = userData["Profile_Photo"] as Uri?
-//                            ),
-//                            images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
-//                            reportType = reportDocument["Report_Hazard_Type"].toString(),
-//                            reportDescription = reportDocument["Report_Description"].toString(),
-//                            reportLocation = Location(
-//                                street = reportDocument["Street"].toString(),
-//                                baranggay = reportDocument["Baranggay"].toString(),
-//                                latitude = /*reportDocument["Latitude"] as Float*/ 0.0f,
-//                                longitude = /*reportDocument["Longitude"] as Float*/ 0.0f
-//                            ),
-//                            numberOfDislikes = 0,
-//                            numberOfLikes = 0
-//                            //hazardStatus = false
-//                        )
-//                    )
-//                }
-//
-//
-//        } //result.forEach
-//        //allReportsList = reportsListState
-//    } //.addOnSuccessListener
 
     // TODO: List of Hazard (retrieve)
 

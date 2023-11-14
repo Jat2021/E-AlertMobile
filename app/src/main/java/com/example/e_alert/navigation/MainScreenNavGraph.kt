@@ -1,11 +1,9 @@
 package com.example.e_alert.navigation
 
-import androidx.activity.ComponentActivity
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
@@ -14,7 +12,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.e_alert.main_screen.home.HomePage
 import com.example.e_alert.main_screen.routes.RoutesPage
-import com.example.e_alert.shared_viewModel.SharedViewModel
 
 sealed class MainScreen (var route : String) {
     object HomePage : MainScreen(route = "Home")
@@ -24,8 +21,8 @@ sealed class MainScreen (var route : String) {
 
 @Composable
 fun MainScreenNavGraph(navController : NavHostController) {
-    val sharedViewModel : SharedViewModel = viewModel(LocalContext.current as ComponentActivity)
-    sharedViewModel.retrieveReportsFromDB()
+    //val sharedViewModel : SharedViewModel = viewModel(LocalContext.current as ComponentActivity)
+    //sharedViewModel.retrieveReportsFromDB()
 
     NavHost(
         navController = navController,
