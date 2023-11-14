@@ -1,11 +1,16 @@
 package com.example.e_alert.main_screen.reports
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.location.Geocoder
 import android.net.Uri
+import android.os.Build
+import android.util.Log
 import android.view.MotionEvent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -55,17 +60,20 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import com.example.e_alert.baranggayList
+import com.example.e_alert.barangayList
 import com.example.e_alert.navigation.MainScreen
 import com.example.e_alert.navigation.Navigation
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
+import java.util.Locale
 
 @SuppressLint("RememberReturnType")
 @Composable
@@ -185,17 +193,21 @@ fun LocationSection(addReportFormViewModel: AddReportFormViewModel? = null) {
             shape = MaterialTheme.shapes.small
         )
 
-        BaranggayDropdownMenu(addReportFormViewModel)
+        BarangayDropdownMenu(addReportFormViewModel)
     } //Column
 } //LocationSection()
 
 @OptIn(FlowPreview::class, ExperimentalComposeUiApi::class)
 @Composable
 fun LocationOnMap (addReportFormViewModel: AddReportFormViewModel?) {
-    LaunchedEffect(addReportFormViewModel!!.cameraPositionState) {
+    LaunchedEffect(addReportFormViewModel!!.cameraPositionState.position.target) {
         snapshotFlow { addReportFormViewModel.cameraPositionState.position.target }
             .debounce(200)
-            .collect { newPosition -> addReportFormViewModel.pinnedLocationState = newPosition }
+            .collect { newPosition ->
+                addReportFormViewModel.setCoordinatesAsGeopoint(newPosition)
+                addReportFormViewModel.pinnedLocationState = LatLng(newPosition.latitude,newPosition.longitude)
+
+            }
     }
 
     Column (
@@ -235,6 +247,30 @@ fun LocationOnMap (addReportFormViewModel: AddReportFormViewModel?) {
         Text(text = "Camera is moving: ${addReportFormViewModel.cameraPositionState.isMoving}")
         Text(text = "Coordinates: Lat: ${addReportFormViewModel.cameraPositionState.position.target.latitude}\n" +
                 "Long: ${addReportFormViewModel.cameraPositionState.position.target.longitude}")
+        //Text(text = "Address: ${addReportFormViewModel")
+
+        val lat = addReportFormViewModel.pinnedLocationState.latitude
+        val long = addReportFormViewModel.pinnedLocationState.longitude
+
+
+        @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+        fun Context.getAddressFromCoordinates(lat : Double, long : Double) : String {
+            val geocoder = Geocoder(this, Locale.getDefault())
+            var address : String = ""
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                geocoder.getFromLocation(lat,long, 2) { addresses ->
+                    if (addresses.isNotEmpty()) {
+                        address = addresses.toString()
+                        Log.d("Getting Address", "Resulting address is: $address")
+                    }
+                }
+            }
+            return address
+        }
+
+        LocalContext.current.getAddressFromCoordinates(lat, long)
+        
         TextButton(
             shape = MaterialTheme.shapes.small,
             onClick = { /*TODO: Get Current Location coordinates and equivalent address*/ },
@@ -358,12 +394,12 @@ private fun RadioButtons(addReportFormViewModel: AddReportFormViewModel? = null)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BaranggayDropdownMenu(addReportFormViewModel : AddReportFormViewModel? = null) {
+fun BarangayDropdownMenu(addReportFormViewModel : AddReportFormViewModel? = null) {
     var isExpanded by remember {
         mutableStateOf(false)
     }
 
-    var baranggay by remember {
+    var barangay by remember {
         mutableStateOf("")
     }
 
@@ -372,14 +408,14 @@ fun BaranggayDropdownMenu(addReportFormViewModel : AddReportFormViewModel? = nul
         onExpandedChange = { isExpanded = it }
     ) {
         OutlinedTextField(
-            value = baranggay,
-            onValueChange = { addReportFormViewModel?.onSelectBaranggay(baranggay) },
+            value = barangay,
+            onValueChange = { addReportFormViewModel?.onSelectBarangay(barangay) },
             readOnly = true,
             trailingIcon = {
                 ExposedDropdownMenuDefaults
                     .TrailingIcon(expanded = isExpanded)
             },
-            label = { Text(text = "Baranggay") },
+            label = { Text(text = "Barangay") },
             modifier = Modifier
                 .menuAnchor()
                 .fillMaxWidth(),
@@ -390,12 +426,12 @@ fun BaranggayDropdownMenu(addReportFormViewModel : AddReportFormViewModel? = nul
             expanded = isExpanded,
             onDismissRequest = { isExpanded = false }
         ) {
-            baranggayList.forEach { baranggayItem ->
+            barangayList.forEach { barangayItem ->
                 DropdownMenuItem(
-                    text = { Text(text = baranggayItem) },
+                    text = { Text(text = barangayItem) },
                     onClick = {
-                        baranggay = baranggayItem
-                        addReportFormViewModel?.onSelectBaranggay(baranggay)
+                        barangay = barangayItem
+                        addReportFormViewModel?.onSelectBarangay(barangay)
                         isExpanded = false
                     }
                 )

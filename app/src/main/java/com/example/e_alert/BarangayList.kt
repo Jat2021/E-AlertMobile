@@ -1,6 +1,6 @@
 package com.example.e_alert
 
-val baranggayList : List<String> = listOf(
+val barangayList : List<String> = listOf(
     "Abella",
     "Bagumbayan Norte",
     "Bagumbayan Sur",

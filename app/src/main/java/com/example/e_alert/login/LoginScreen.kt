@@ -47,7 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.e_alert.baranggayList
+import com.example.e_alert.barangayList
 
 @Composable
 fun LoginScreen(
@@ -296,7 +296,7 @@ fun SignUpScreen(
                     expanded = isExpanded,
                     onDismissRequest = { isExpanded = false }
                 ) {
-                    baranggayList.forEach { baranggayItem ->
+                    barangayList.forEach { baranggayItem ->
                         DropdownMenuItem(
                             text = { Text(text = baranggayItem) },
                             onClick = {

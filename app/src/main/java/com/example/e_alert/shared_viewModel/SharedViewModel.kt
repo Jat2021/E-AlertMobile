@@ -103,7 +103,7 @@ class SharedViewModel : ViewModel() {
                                 ),
                                 numberOfDislikes = 0,
                                 numberOfLikes = 0
-                                //isVerified = false
+                                //hazardStatus = false
                             )
                         )
                     } //result.forEach
@@ -137,7 +137,7 @@ class SharedViewModel : ViewModel() {
 //                            ),
 //                            numberOfDislikes = 0,
 //                            numberOfLikes = 0
-//                            //isVerified = false
+//                            //hazardStatus = false
 //                        )
 //                    )
 //                }
