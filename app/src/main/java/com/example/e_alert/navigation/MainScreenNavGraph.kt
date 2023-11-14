@@ -24,6 +24,9 @@ sealed class MainScreen (var route : String) {
 
 @Composable
 fun MainScreenNavGraph(navController : NavHostController) {
+    val sharedViewModel : SharedViewModel = viewModel(LocalContext.current as ComponentActivity)
+    sharedViewModel.retrieveReportsFromDB()
+
     NavHost(
         navController = navController,
         startDestination = MainScreen.HomePage.route,

@@ -55,37 +55,37 @@ class ReportsPageViewModel(sharedViewModel : SharedViewModel) : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
     fun retrieveReportsFromDB() {
-    lateinit var author : User
+        lateinit var author : User
 
-    db.collection("User").document(AuthRepository().getUserId())
-        .get().addOnSuccessListener { userData ->
-            author = User(
-                firstName = userData["First_Name"].toString(),
-                lastName = userData["Last_Name"].toString(),
-                profilePhoto = /*user["Profile_Photo"] as Uri*/ null
-            )
-        }
-
-    db.collection("Report").document()
-        .addSnapshotListener { reportDocument, e ->
-            //for (reportDocument in result) {
-                reportsListState.add(
-                    ReportData(
-                        user = author,
-                        images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
-                        reportType = reportDocument!!["Report_Hazard_Type"].toString(),
-                        reportDescription = reportDocument["Report_Description"].toString(),
-                        reportLocation = Location(
-                            street = reportDocument["Street"].toString(),
-                            baranggay = reportDocument["Baranggay"].toString(),
-                            latitude = reportDocument["Latitude"] as Double,
-                            longitude = reportDocument["Longitude"] as Double
-                        ),
-                        numberOfDislikes = 0,
-                        numberOfLikes = 0,
-                    )
+        db.collection("User").document(AuthRepository().getUserId())
+            .get().addOnSuccessListener { userData ->
+                author = User(
+                    firstName = userData["First_Name"].toString(),
+                    lastName = userData["Last_Name"].toString(),
+                    profilePhoto = /*user["Profile_Photo"] as Uri*/ null
                 )
-            //} //result.forEach
-            //allReportsList = reportsListState
-        } //.addOnSuccessListener
+            }
+
+        db.collection("Report").document()
+            .addSnapshotListener { reportDocument, e ->
+                //for (reportDocument in result) {
+                    reportsListState.add(
+                        ReportData(
+                            user = author,
+                            images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
+                            reportType = reportDocument!!["Report_Hazard_Type"].toString(),
+                            reportDescription = reportDocument["Report_Description"].toString(),
+                            reportLocation = Location(
+                                street = reportDocument["Street"].toString(),
+                                baranggay = reportDocument["Baranggay"].toString(),
+                                latitude = reportDocument["Latitude"] as Double,
+                                longitude = reportDocument["Longitude"] as Double
+                            ),
+                            numberOfDislikes = 0,
+                            numberOfLikes = 0,
+                        )
+                    )
+                //} //result.forEach
+                //allReportsList = reportsListState
+            } //.addOnSuccessListener
     } //fun retrieveReportsFromDB
