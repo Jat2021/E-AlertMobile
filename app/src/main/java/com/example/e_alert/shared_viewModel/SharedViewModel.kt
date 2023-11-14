@@ -8,7 +8,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
-import com.example.e_alert.repository.AuthRepository
 import com.google.android.gms.location.FusedLocationProviderClient
 import kotlinx.coroutines.launch
 
@@ -39,10 +38,10 @@ data class User(
 )
 
 data class Location(
-    val street : String,
-    val baranggay : String,
-    val latitude : Float,
-    val longitude : Float
+    val street: String,
+    val baranggay: String,
+    val latitude: Double,
+    val longitude: Double
 )
 
 class SharedViewModel : ViewModel() {
