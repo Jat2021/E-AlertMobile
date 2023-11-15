@@ -49,6 +49,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.e_alert.shared_viewModel.ReportData
 import com.example.e_alert.shared_viewModel.User
+import com.google.firebase.Timestamp
+import java.text.SimpleDateFormat
 
 @Composable
 fun Report (data : ReportData) {
@@ -92,7 +94,7 @@ fun Report (data : ReportData) {
 }
 
 @Composable
-fun Header (user: User, timePosted: String) {
+fun Header (user: User, timePosted: Timestamp) {
     //TODO: Includes profile photo, Username (from DB)
     Row (modifier = Modifier
         .padding(16.dp, 16.dp, 8.dp, 16.dp)
@@ -114,10 +116,14 @@ fun Header (user: User, timePosted: String) {
                     style = typography.titleMedium,
                     text = user.firstName
                 )
+
+                val formattedTimestamp = SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+                    .format(timePosted.toDate())
+
                 Text(
                     color = colorScheme.onSurfaceVariant,
                     style = typography.titleSmall,
-                    text = timePosted.toString())
+                    text = formattedTimestamp)
             }
         } //Row [User]
 

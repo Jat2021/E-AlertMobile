@@ -7,27 +7,28 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 
 data class ReportData(
-    val user: User = User(
+    val user : User = User(
         firstName = "",
         lastName = "",
         profilePhoto = null
     ),
-    val timestamp: String,
-    val images: List<Uri>? = null,
-    val reportType: String = "",
-    val reportLocation: Location = Location(
+    val timestamp: Timestamp,
+    val images : List<Uri>? = null,
+    val reportType : String = "",
+    val reportLocation : Location = Location(
         street = "",
         baranggay = "",
         coordinates = GeoPoint(0.0,0.0)
     ),
-    val reportDescription: String = "",
-    val numberOfLikes: Int = 0,
-    val numberOfDislikes: Int = 0,
-    val isVerified: Boolean = false
+    val reportDescription : String = "",
+    val numberOfLikes : Int = 0,
+    val numberOfDislikes : Int = 0,
+    val isVerified : Boolean = false
 )
 
 data class User(
@@ -90,14 +91,14 @@ class SharedViewModel : ViewModel() {
                                 lastName = "Vasquez",
                                 profilePhoto = null
                             ),
-                            timestamp = reportDocument["Timestamp"].toString(),
+                            timestamp = reportDocument["Timestamp"] as Timestamp,
                             images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
                             reportType = reportDocument["Report_Hazard_Type"].toString(),
                             reportDescription = reportDocument["Report_Description"].toString(),
                             reportLocation = Location(
                                 street = reportDocument["Street"].toString(),
                                 baranggay = reportDocument["Baranggay"].toString(),
-                                coordinates = /*reportDocument["Coordinates"] as GeoPoint*/ GeoPoint(0.0,0.0),
+                                coordinates = reportDocument["Coordinates"] as GeoPoint
                             ),
                             numberOfDislikes = 0,
                             numberOfLikes = 0
@@ -106,6 +107,7 @@ class SharedViewModel : ViewModel() {
                     ) //reportsListState.add
             } //.addOnSuccessListener
     } //fun retrieveReportsFromDB
+
 
     // TODO: List of Hazard (retrieve)
 
