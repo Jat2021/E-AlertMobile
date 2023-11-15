@@ -11,22 +11,23 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 
 data class ReportData(
-    val user : User = User(
+    val user: User = User(
         firstName = "",
         lastName = "",
         profilePhoto = null
     ),
-    val images : List<Uri>? = null,
-    val reportType : String = "",
-    val reportLocation : Location = Location(
+    val timestamp: String,
+    val images: List<Uri>? = null,
+    val reportType: String = "",
+    val reportLocation: Location = Location(
         street = "",
         baranggay = "",
         coordinates = GeoPoint(0.0,0.0)
     ),
-    val reportDescription : String = "",
-    val numberOfLikes : Int = 0,
-    val numberOfDislikes : Int = 0,
-    val isVerified : Boolean = false
+    val reportDescription: String = "",
+    val numberOfLikes: Int = 0,
+    val numberOfDislikes: Int = 0,
+    val isVerified: Boolean = false
 )
 
 data class User(
@@ -77,29 +78,32 @@ class SharedViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
     fun retrieveReportsFromDB() {
-        db.collection("Report").document()
-            .addSnapshotListener { reportDocument, e ->
-                reportsListState.add(
-                    ReportData(
-                        user = User(
-                            firstName = "Justin",
-                            lastName = "Vasquez",
-                            profilePhoto = null
-                        ),
-                        images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
-                        reportType = reportDocument!!["Report_Hazard_Type"].toString(),
-                        reportDescription = reportDocument["Report_Description"].toString(),
-                        reportLocation = Location(
-                            street = reportDocument["Street"].toString(),
-                            baranggay = reportDocument["Baranggay"].toString(),
-                            coordinates = /*reportDocument["Coordinates"] as GeoPoint*/ GeoPoint(0.0,0.0),
-                        ),
-                        numberOfDislikes = 0,
-                        numberOfLikes = 0
-                        //hazardStatus = false
-                    )
-                )
-                //allReportsList = reportsListState
+        db.collection("Report")
+            .addSnapshotListener { result, e ->
+
+                reportsListState.clear()
+                for (reportDocument in result!!.documents)
+                    reportsListState.add(
+                        ReportData(
+                            user = User(
+                                firstName = "Justin",
+                                lastName = "Vasquez",
+                                profilePhoto = null
+                            ),
+                            timestamp = reportDocument["Timestamp"].toString(),
+                            images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
+                            reportType = reportDocument["Report_Hazard_Type"].toString(),
+                            reportDescription = reportDocument["Report_Description"].toString(),
+                            reportLocation = Location(
+                                street = reportDocument["Street"].toString(),
+                                baranggay = reportDocument["Baranggay"].toString(),
+                                coordinates = /*reportDocument["Coordinates"] as GeoPoint*/ GeoPoint(0.0,0.0),
+                            ),
+                            numberOfDislikes = 0,
+                            numberOfLikes = 0
+                            //hazardStatus = false
+                        )
+                    ) //reportsListState.add
             } //.addOnSuccessListener
     } //fun retrieveReportsFromDB
 

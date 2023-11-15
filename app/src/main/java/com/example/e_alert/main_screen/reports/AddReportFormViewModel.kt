@@ -1,15 +1,9 @@
 package com.example.e_alert.main_screen.reports
 
-import android.content.Context
-import android.location.Geocoder
 import android.net.Uri
-import android.os.Build
-import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.e_alert.repository.AuthRepository
@@ -20,7 +14,6 @@ import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.ServerTimestamp
 import com.google.maps.android.compose.CameraPositionState
 import kotlinx.coroutines.launch
-import java.util.Locale
 import kotlin.Error
 import kotlin.random.Random
 
@@ -92,21 +85,6 @@ class AddReportFormViewModel : ViewModel() {
             .addOnSuccessListener { addReportFormUIState.successfullyCreated = true }
             .addOnFailureListener { addReportFormUIState.successfullyCreated = false }
     }
-
-//    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-//    fun getAddressFromCoordinates(lat : Double, long : Double) : String {
-//        val geocoder = Geocoder(context, Locale.getDefault())
-//        var address : String = ""
-//
-//        geocoder.getFromLocation(lat,long, 2) { addresses ->
-//            if (addresses.isNotEmpty()) {
-//                address = addresses[0].getAddressLine(1)
-//            }
-//        }
-//
-//        Log.d("Getting Address", "Resulting address is: $address")
-//        return address
-//    }
 
     fun setCoordinatesAsGeopoint(coordinates : LatLng) {
         addReportFormUIState = addReportFormUIState

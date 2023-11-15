@@ -63,7 +63,7 @@ fun Report (data : ReportData) {
         ) {
             Header(
                 user = data.user,
-                timePosted = "<timestamp here>"
+                timePosted = data.timestamp
             )
             if (data.images != null) ReportPhotos(images = data.images)
 
@@ -92,7 +92,7 @@ fun Report (data : ReportData) {
 }
 
 @Composable
-fun Header (user : User, timePosted: String) {
+fun Header (user: User, timePosted: String) {
     //TODO: Includes profile photo, Username (from DB)
     Row (modifier = Modifier
         .padding(16.dp, 16.dp, 8.dp, 16.dp)
@@ -117,7 +117,7 @@ fun Header (user : User, timePosted: String) {
                 Text(
                     color = colorScheme.onSurfaceVariant,
                     style = typography.titleSmall,
-                    text = timePosted)
+                    text = timePosted.toString())
             }
         } //Row [User]
 

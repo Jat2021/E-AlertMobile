@@ -20,8 +20,6 @@ import com.example.e_alert.shared_viewModel.SharedViewModel
 
 @Composable
 fun ReportsPage (sharedViewModel : SharedViewModel, navController : NavHostController) {
-    sharedViewModel.retrieveReportsFromDB()
-
     Scaffold (
         containerColor = colorScheme.surfaceColorAtElevation(3.dp),
         floatingActionButton = { AddReportFAB(navController) },
