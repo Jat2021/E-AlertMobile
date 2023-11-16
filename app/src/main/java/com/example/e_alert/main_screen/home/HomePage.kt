@@ -12,12 +12,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.e_alert.BottomSheet
+import com.example.e_alert.shared_viewModel.HazardAreaData
+import com.example.e_alert.shared_viewModel.ReportData
 import com.example.e_alert.shared_viewModel.SharedViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -30,8 +33,12 @@ import com.google.maps.android.compose.rememberCameraPositionState
 fun HomePage () {
     val sharedViewModel : SharedViewModel = viewModel(LocalContext.current as ComponentActivity)
     sharedViewModel.retrieveReportsFromDB()
+    sharedViewModel.retrieveHazardAreasFromDB()
 
-    Map()
+    Map(
+        listOfHazardAreas = sharedViewModel.hazardAreasListState,
+        listOfReports = sharedViewModel.reportsListState
+    )
     BottomSheetHome()
 }
 
@@ -101,21 +108,44 @@ fun BottomSheetHome () {
 }
 
 @Composable
-fun Map () {
+fun Map(
+    listOfHazardAreas: SnapshotStateList<HazardAreaData>,
+    listOfReports: SnapshotStateList<ReportData>
+) {
     val nagaCity = LatLng(13.621775, 123.194824)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(nagaCity, 14f)
     }
 
+    val listOfHazardAreaPins =
+
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState
     ) {
-        Marker(
-            state = MarkerState(position = nagaCity),
-            title = "Naga City, Camarines Sur",
-            snippet = "City of Naga"
-        )
+        listOfHazardAreas.forEach { hazardArea ->
+            val hazardCoordinates = LatLng(
+                hazardArea.coordinates.latitude,
+                hazardArea.coordinates.longitude
+            )
+
+            Marker(
+                state = MarkerState(position = hazardCoordinates),
+                title = hazardArea.hazardAreaID
+            )
+        } //listOfHazardAreas.forEach
+
+        listOfReports.forEach { report ->
+            val reportCoordinates = LatLng(
+                report.reportLocation.coordinates.latitude,
+                report.reportLocation.coordinates.longitude
+            )
+
+            Marker(
+                state = MarkerState(position = reportCoordinates),
+                title = report.reportID
+            )
+        }
     }
 }
 

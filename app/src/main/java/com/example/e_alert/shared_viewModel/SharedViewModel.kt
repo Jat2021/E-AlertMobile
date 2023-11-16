@@ -17,6 +17,7 @@ data class ReportData(
         lastName = "",
         profilePhoto = null
     ),
+    val reportID: String = "",
     val timestamp: Timestamp,
     val images : List<Uri>? = null,
     val reportType : String = "",
@@ -43,10 +44,20 @@ data class Location(
     val coordinates: GeoPoint
 )
 
+data class HazardAreaData (
+    val hazardAreaID : String = "",
+    val address : String = "",
+    val barangay : String = "",
+    val street : String = "",
+    val coordinates: GeoPoint = GeoPoint(0.0, 0.0),
+    val riskLevel : String = ""
+)
+
 class SharedViewModel : ViewModel() {
     val reportsListState = mutableStateListOf<ReportData>()
+    val hazardAreasListState = mutableStateListOf<HazardAreaData>()
 
-    private val mapState: MutableState<MapState> = mutableStateOf(
+    val mapState: MutableState<MapState> = mutableStateOf(
         MapState(
             lastKnownLocation = null,
             reportPins = reportsListState
@@ -80,7 +91,7 @@ class SharedViewModel : ViewModel() {
 
     fun retrieveReportsFromDB() {
         db.collection("Report")
-            .addSnapshotListener { result, e ->
+            .addSnapshotListener { result, error ->
 
                 reportsListState.clear()
                 for (reportDocument in result!!.documents)
@@ -91,6 +102,7 @@ class SharedViewModel : ViewModel() {
                                 lastName = "Vasquez",
                                 profilePhoto = null
                             ),
+                            reportID = reportDocument["Report_ID"].toString(),
                             timestamp = reportDocument["Timestamp"] as Timestamp,
                             images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
                             reportType = reportDocument["Report_Hazard_Type"].toString(),
@@ -111,5 +123,23 @@ class SharedViewModel : ViewModel() {
 
     // TODO: List of Hazard (retrieve)
 
+    fun retrieveHazardAreasFromDB() {
+        db.collection("markers")
+            .addSnapshotListener { result, error ->
+
+                hazardAreasListState.clear()
+                for (hazardAreaDocument in result!!.documents)
+                    hazardAreasListState.add(
+                        HazardAreaData(
+                            hazardAreaID = hazardAreaDocument["uniqueID"].toString(),
+                            address = hazardAreaDocument["address"].toString(),
+                            barangay = hazardAreaDocument["barangay"].toString(),
+                            street = hazardAreaDocument["street"].toString(),
+                            coordinates = hazardAreaDocument["coordinates"] as GeoPoint,
+                            riskLevel = hazardAreaDocument["risk_level"].toString()
+                        )
+                    ) //hazardAreasListState.add
+            } //.addOnSuccessListener
+    } //fun retrieveReportsFromDB
 
 }
