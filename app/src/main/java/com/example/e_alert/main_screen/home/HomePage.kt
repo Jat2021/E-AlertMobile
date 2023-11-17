@@ -12,6 +12,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +24,8 @@ import com.example.e_alert.BottomSheet
 import com.example.e_alert.shared_viewModel.HazardAreaData
 import com.example.e_alert.shared_viewModel.ReportData
 import com.example.e_alert.shared_viewModel.SharedViewModel
+import com.example.e_alert.weather.WeatherState
+import com.example.e_alert.weather.WeatherViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -32,10 +36,17 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @Composable
 fun HomePage () {
     val sharedViewModel : SharedViewModel = viewModel(LocalContext.current as ComponentActivity)
+    val weatherViewModel : WeatherViewModel = viewModel(LocalContext.current as ComponentActivity)
+
+    weatherViewModel.fetchWeatherData()
+
     sharedViewModel.retrieveReportsFromDB()
     sharedViewModel.retrieveHazardAreasFromDB()
 
+    val weatherState by weatherViewModel.weatherState.collectAsState()
+
     Map(
+        weatherState = weatherState,
         listOfHazardAreas = sharedViewModel.hazardAreasListState,
         listOfReports = sharedViewModel.reportsListState
     )
@@ -117,8 +128,6 @@ fun Map(
         position = CameraPosition.fromLatLngZoom(nagaCity, 14f)
     }
 
-    val listOfHazardAreaPins =
-
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState
@@ -146,6 +155,6 @@ fun Map(
                 title = report.reportID
             )
         }
-    }
+    } //GoogleMap
 }
 
