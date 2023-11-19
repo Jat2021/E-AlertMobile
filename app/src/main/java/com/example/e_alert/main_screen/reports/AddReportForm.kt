@@ -78,7 +78,7 @@ import java.util.Locale
 @Composable
 fun AddReportForm(addReportFormViewModel: AddReportFormViewModel? = null,
       navController : NavHostController) {
-    addReportFormViewModel!!.getBarangayListFromDB()
+    addReportFormViewModel!!.retrieveBarangayListFromDB()
     val pinnedLocation = addReportFormViewModel.pinnedLocationState
 
     addReportFormViewModel.cameraPositionState = rememberCameraPositionState {

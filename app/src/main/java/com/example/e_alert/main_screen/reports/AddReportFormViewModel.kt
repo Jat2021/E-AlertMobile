@@ -94,7 +94,7 @@ class AddReportFormViewModel : ViewModel() {
 
     val listOfBarangayState = mutableStateListOf<String>()
 
-    fun getBarangayListFromDB () {
+    fun retrieveBarangayListFromDB () {
         db.collection("Report")
             .orderBy("name", Query.Direction.DESCENDING)
             .addSnapshotListener { result, error ->
