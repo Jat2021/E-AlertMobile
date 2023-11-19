@@ -11,12 +11,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-sealed class WeatherState {
-    object Loading : WeatherState()
-    data class Success(val weatherData : WeatherData) : WeatherState()
-    data class Error(val message : String) : WeatherState()
-}
-
 class WeatherViewModel : ViewModel() {
     private val apiKey = "6378430bc45061aaccd4a566a86c25df"
     private val latitude = 13.617
@@ -24,8 +18,8 @@ class WeatherViewModel : ViewModel() {
 
     val baseURL = "https://api.openweathermap.org/data/2.5/"
 
-    val weatherData = mutableListOf<WeatherData>()
-
+    var weatherDataMutableList = mutableListOf<WeatherData>()
+    lateinit var weatherData : Map<*,*>
 
 
     suspend fun fetchWeatherData () : List<WeatherData> = withContext(Dispatchers.IO) {
@@ -66,4 +60,44 @@ class WeatherViewModel : ViewModel() {
 
         return filteredList.map { WeatherData.fromJson(it as Map<*, *>) }
     }
+
+    fun getWeatherData () {
+        val url = "${baseURL}forecast?lat=$latitude&lon=$longitude&appid=$apiKey"
+        val client = OkHttpClient()
+        val request = Request.Builder().url(url).build()
+
+        try {
+            val response = client.newCall(request).execute()
+
+            if (!response.isSuccessful) throw IOException("Unexpected code $response")
+
+            val gson : Gson = Gson()
+            val data = gson.fromJson(response.body.toString(), Map::class.java)
+
+            weatherData = data
+        } catch (e : Exception) {
+            throw e
+        }
+    }
+
+    fun checkHazardRisk() : String {
+        var hazardRisk : String = ""
+
+        if (weatherData["list"][0]["rain"]["3h"] >= 6.5 && weatherData["list"][0]["rain"]["3h"] <= 15.0) {
+            if (weatherData["list"][1]["rain"]["3h"] >= 6.5 && weatherData["list"][1]["rain"]["3h"] <= 6.5) {
+                if (weatherData["list"][2]["rain"]["3h"] >= 6.5 && weatherData["list"][2]["rain"]["3h"] <= 6.5) {
+                    hazardRisk = "low"
+                }
+            }
+        }
+
+        else if (weatherData["list"][0]["rain"]["3h"] >= 15.0 && weatherData["list"][0]["rain"]["3h"] >= 30.0) {
+            if (weatherData["list"][1]["rain"]["3h"] >= 15.0 && weatherData["list"][1]["rain"]["3h"] >= 30.0) {
+                if (weatherData["list"][2]["rain"]["3h"] >= 15.0 && weatherData["list"][2]["rain"]["3h"] >= 30.0) {
+                    hazardRisk = "Medium"
+                }
+            }
+        }
+        return hazardRisk
+    } //fun checkHazardRisk()
 }
