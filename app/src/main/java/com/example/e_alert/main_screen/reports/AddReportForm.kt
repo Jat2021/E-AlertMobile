@@ -78,7 +78,8 @@ import java.util.Locale
 @Composable
 fun AddReportForm(addReportFormViewModel: AddReportFormViewModel? = null,
       navController : NavHostController) {
-    val pinnedLocation = addReportFormViewModel!!.pinnedLocationState
+    addReportFormViewModel!!.getBarangayListFromDB()
+    val pinnedLocation = addReportFormViewModel.pinnedLocationState
 
     addReportFormViewModel.cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(pinnedLocation, 14f)
@@ -430,7 +431,7 @@ fun BarangayDropdownMenu(addReportFormViewModel : AddReportFormViewModel? = null
                     text = { Text(text = barangayItem) },
                     onClick = {
                         barangay = barangayItem
-                        addReportFormViewModel?.onSelectBarangay(barangay)
+                        addReportFormViewModel.onSelectBarangay(barangay)
                         isExpanded = false
                     }
                 )
