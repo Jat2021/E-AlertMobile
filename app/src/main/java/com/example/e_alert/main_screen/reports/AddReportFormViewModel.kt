@@ -2,6 +2,7 @@ package com.example.e_alert.main_screen.reports
 
 import android.net.Uri
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -11,6 +12,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ServerTimestamp
 import com.google.maps.android.compose.CameraPositionState
 import kotlinx.coroutines.launch
@@ -28,6 +30,10 @@ data class NewPost (
     var hazardStatus : String = "",
 
     var successfullyCreated : Boolean = false
+)
+
+data class Barangay (
+    var barangayName : String = ""
 )
 
 sealed class Error (var message : String) {
@@ -85,6 +91,21 @@ class AddReportFormViewModel : ViewModel() {
             .addOnSuccessListener { addReportFormUIState.successfullyCreated = true }
             .addOnFailureListener { addReportFormUIState.successfullyCreated = false }
     }
+
+    val listOfBarangayState = mutableStateListOf<String>()
+
+    fun getBarangayListFromDB () {
+        db.collection("Report")
+            .orderBy("name", Query.Direction.DESCENDING)
+            .addSnapshotListener { result, error ->
+
+                listOfBarangayState.clear()
+                for (barangayDocument in result!!.documents)
+                    listOfBarangayState.add(
+                        barangayDocument["name"].toString()
+                    )
+            } //.addOnSuccessListener
+    } //fun retrieveReportsFromDB
 
     fun setCoordinatesAsGeopoint(coordinates : LatLng) {
         addReportFormUIState = addReportFormUIState

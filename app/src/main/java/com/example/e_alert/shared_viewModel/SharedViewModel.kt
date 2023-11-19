@@ -10,6 +10,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.firestore.Query
 
 data class ReportData(
     val user : User = User(
@@ -91,32 +92,37 @@ class SharedViewModel : ViewModel() {
 
     fun retrieveReportsFromDB() {
         db.collection("Report")
-            .addSnapshotListener { result, error ->
+            .orderBy("Timestamp", Query.Direction.DESCENDING)
+            .addSnapshotListener { report, error ->
 
                 reportsListState.clear()
-                for (reportDocument in result!!.documents)
-                    reportsListState.add(
-                        ReportData(
-                            user = User(
-                                firstName = "Justin",
-                                lastName = "Vasquez",
-                                profilePhoto = null
-                            ),
-                            reportID = reportDocument["Report_ID"].toString(),
-                            timestamp = reportDocument["Timestamp"] as Timestamp,
-                            images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
-                            reportType = reportDocument["Report_Hazard_Type"].toString(),
-                            reportDescription = reportDocument["Report_Description"].toString(),
-                            reportLocation = Location(
-                                street = reportDocument["Street"].toString(),
-                                baranggay = reportDocument["Baranggay"].toString(),
-                                coordinates = reportDocument["Coordinates"] as GeoPoint
-                            ),
-                            numberOfDislikes = 0,
-                            numberOfLikes = 0
-                            //hazardStatus = false
-                        )
-                    ) //reportsListState.add
+                for (reportDocument in report!!.documents)
+                    db.collection("User").document(reportDocument["User_ID"].toString())
+                        .addSnapshotListener() { user, errors ->
+                            reportsListState.add(
+                                ReportData(
+                                    user = User(
+                                        firstName = user!!["First_Name"].toString(),
+                                        lastName = user["Last_Name"].toString(),
+                                        profilePhoto = null
+                                    ),
+                                    reportID = reportDocument["Report_ID"].toString(),
+                                    timestamp = reportDocument["Timestamp"] as Timestamp,
+                                    images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
+                                    reportType = reportDocument["Report_Hazard_Type"].toString(),
+                                    reportDescription = reportDocument["Report_Description"].toString(),
+                                    reportLocation = Location(
+                                        street = reportDocument["Street"].toString(),
+                                        baranggay = reportDocument["Baranggay"].toString(),
+                                        coordinates = reportDocument["Coordinates"] as GeoPoint
+                                    ),
+                                    numberOfDislikes = 0,
+                                    numberOfLikes = 0
+                                    //hazardStatus = false
+                                )
+                            ) //reportsListState.add
+                        }
+
             } //.addOnSuccessListener
     } //fun retrieveReportsFromDB
 

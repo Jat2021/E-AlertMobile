@@ -64,7 +64,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import com.example.e_alert.barangayList
 import com.example.e_alert.navigation.MainScreen
 import com.example.e_alert.navigation.Navigation
 import com.google.android.gms.maps.model.CameraPosition
@@ -426,7 +425,7 @@ fun BarangayDropdownMenu(addReportFormViewModel : AddReportFormViewModel? = null
             expanded = isExpanded,
             onDismissRequest = { isExpanded = false }
         ) {
-            barangayList.forEach { barangayItem ->
+            addReportFormViewModel!!.listOfBarangayState.forEach { barangayItem ->
                 DropdownMenuItem(
                     text = { Text(text = barangayItem) },
                     onClick = {
