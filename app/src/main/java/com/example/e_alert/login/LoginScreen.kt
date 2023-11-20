@@ -47,7 +47,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.e_alert.barangayList
 
 @Composable
 fun LoginScreen(
@@ -150,6 +149,8 @@ fun SignUpScreen(
     val loginUiState = loginViewModel?.loginUiState
     val isError = loginUiState?.signUpError != null
     val context = LocalContext.current
+
+    loginViewModel?.retrieveBarangayListFromDB()
 
     Scaffold (
         topBar = { TopBarSignUp() }
@@ -296,7 +297,7 @@ fun SignUpScreen(
                     expanded = isExpanded,
                     onDismissRequest = { isExpanded = false }
                 ) {
-                    barangayList.forEach { baranggayItem ->
+                    loginViewModel?.listOfBarangayState?.forEach { baranggayItem ->
                         DropdownMenuItem(
                             text = { Text(text = baranggayItem) },
                             onClick = {

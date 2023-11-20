@@ -16,6 +16,7 @@ class WeatherViewModel : ViewModel() {
 
     val baseURL = "https://api.openweathermap.org/data/2.5/"
 
+    private var forecastList : List<Any> = emptyList()
     lateinit var weatherData : Map<*,*>
 
 //    suspend fun fetchWeatherData () : List<WeatherData> = withContext(Dispatchers.IO) {
@@ -69,14 +70,21 @@ class WeatherViewModel : ViewModel() {
 
             val gson : Gson = Gson()
             val data = gson.fromJson(response.body?.string(), Map::class.java)
-            val forecastList = (data["list"] as List<*>)
 
-            //val weatherDataString = data[0]
+            //forecastList = (listOf(data["list"] as List<*>))
 
-            Log.d("weatherData", "weatherData: ${forecastList[1]}")
+            Log.d("WeatherData", "WeatherData data: ${data["list"]}")
         } catch (e : Exception) {
             throw e
         }
+    }
+
+    fun getForecastMain () {
+
+    }
+
+    fun getForecastRain () {
+
     }
 
 //    fun checkHazardRisk() : String {

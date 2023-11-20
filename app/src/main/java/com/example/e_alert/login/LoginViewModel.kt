@@ -4,13 +4,15 @@ import android.content.Context
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.e_alert.repository.AuthRepository
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.setValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import kotlinx.coroutines.launch
 
 data class LoginUiState(
     val profilePhoto : Uri? = null,
@@ -41,6 +43,7 @@ data class LoginUiState(
 class LoginViewModel(
     private val repository : AuthRepository = AuthRepository()
 ) : ViewModel() {
+    val db = FirebaseFirestore.getInstance()
 
     val hasUser : Boolean get() = repository.hasUser()
 
@@ -99,8 +102,6 @@ class LoginViewModel(
     }
 
     private fun createUserDocumentInDB () {
-        val db = FirebaseFirestore.getInstance()
-
         db.collection("User")
             .document(repository.getUserId()).set(
                 hashMapOf(
@@ -113,6 +114,21 @@ class LoginViewModel(
                 )
             )
     } //createUserDocumentInDB
+
+    val listOfBarangayState = mutableStateListOf<String>()
+
+    fun retrieveBarangayListFromDB () {
+        db.collection("Report")
+            .orderBy("name", Query.Direction.DESCENDING)
+            .addSnapshotListener { result, error ->
+
+                listOfBarangayState.clear()
+                for (barangayDocument in result!!.documents)
+                    listOfBarangayState.add(
+                        barangayDocument["name"].toString()
+                    )
+            } //.addOnSuccessListener
+    } //fun retrieveReportsFromDB
 
     fun createUser(context: Context) = viewModelScope.launch {
         try {
