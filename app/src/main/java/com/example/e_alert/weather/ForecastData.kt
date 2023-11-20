@@ -1,8 +1,7 @@
 package com.example.e_alert.weather
 
-import android.annotation.SuppressLint
-import java.text.SimpleDateFormat
-import java.util.Locale
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 data class ForecastData(
     val date : String,
@@ -11,11 +10,10 @@ data class ForecastData(
     val iconUrl : String
 ) {
     companion object {
-        @SuppressLint("SimpleDateFormat")
         fun fromJson(weatherList : WeatherList) : ForecastData {
-            val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-                .parse(weatherList.dt_txt)
-            val formattedDate = dateTime?.let { SimpleDateFormat("yyyy-MM-dd").format(it) }
+            val dateTime = LocalDateTime.parse(weatherList.dt_txt,
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            val formattedDate = dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
             val temperature = (weatherList.main.temp - 273.15).toInt()
             val weatherDescription = (weatherList.weather as Map<*,*>)
             val iconCode = weatherDescription["icon"] as String

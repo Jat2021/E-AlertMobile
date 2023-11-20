@@ -1,10 +1,13 @@
 package com.example.e_alert.main_screen.home
 
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
@@ -53,6 +56,11 @@ fun HomePage () {
 @Composable
 fun BottomSheetHome () {
     BottomSheet () {
+        Column (
+            modifier = Modifier.horizontalScroll(rememberScrollState())
+        ) {
+
+        }
         Box(
             Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
