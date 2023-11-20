@@ -42,12 +42,12 @@ class WeatherViewModel : ViewModel() {
     }
 
     //This returns a list of 5-day forecast
-    fun getForecastMain () : List<ForecastData> {
+    fun get5DayForecast () : List<ForecastData> {
 
         return emptyList()
     }
 
-    fun getForecastRain () {
+    fun getRainForecast () {
 
     }
 
