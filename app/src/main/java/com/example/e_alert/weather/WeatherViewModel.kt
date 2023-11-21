@@ -79,24 +79,26 @@ class WeatherViewModel : ViewModel() {
         return rainVolume
     }
 
-//    fun checkHazardRisk() : String {
-//        var hazardRisk : String = ""
-//
-//        if (weatherData["list"][0]["rain"]["3h"] >= 6.5 && weatherData["list"][0]["rain"]["3h"] <= 15.0) {
-//            if (weatherData["list"][1]["rain"]["3h"] >= 6.5 && weatherData["list"][1]["rain"]["3h"] <= 6.5) {
-//                if (weatherData["list"][2]["rain"]["3h"] >= 6.5 && weatherData["list"][2]["rain"]["3h"] <= 6.5) {
-//                    hazardRisk = "low"
-//                }
-//            }
-//        }
-//
-//        else if (weatherData["list"][0]["rain"]["3h"] >= 15.0 && weatherData["list"][0]["rain"]["3h"] >= 30.0) {
-//            if (weatherData["list"][1]["rain"]["3h"] >= 15.0 && weatherData["list"][1]["rain"]["3h"] >= 30.0) {
-//                if (weatherData["list"][2]["rain"]["3h"] >= 15.0 && weatherData["list"][2]["rain"]["3h"] >= 30.0) {
-//                    hazardRisk = "Medium"
-//                }
-//            }
-//        }
-//        return hazardRisk
-//    } //fun checkHazardRisk()
+    fun checkCurrentHazardRisk() : String {
+        var hazardRisk : String = ""
+
+        val rain1 = weatherData.list[0].rain.`3h`
+        val rain2 = weatherData.list[1].rain.`3h`
+        val rain3 = weatherData.list[2].rain.`3h`
+
+        if ((rain1 in 6.5..15.0) && (rain2 in 6.5..15.0) && (rain3 in 6.5..15.0)) {
+            hazardRisk = "low"
+        }
+
+        else if ((rain1 > 15.0 && rain1 <= 30.0) && (rain2 > 15.0 && rain2 <= 30.0)
+            && (rain3 > 15.0 && rain3 <= 30.0)) {
+            hazardRisk = "Medium"
+        }
+
+        else if (rain1 > 30.0 && rain2 > 30.0 && rain3 > 30.0) {
+            hazardRisk = "High"
+        }
+
+        return hazardRisk
+    } //fun checkCurrentHazardRisk()
 }

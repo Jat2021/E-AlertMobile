@@ -45,7 +45,7 @@ data class Location(
     val coordinates: GeoPoint
 )
 
-data class HazardAreaData (
+data class FloodHazardAreaData (
     val hazardAreaID : String = "",
     val address : String = "",
     val barangay : String = "",
@@ -56,7 +56,7 @@ data class HazardAreaData (
 
 class SharedViewModel : ViewModel() {
     val reportsListState = mutableStateListOf<ReportData>()
-    val hazardAreasListState = mutableStateListOf<HazardAreaData>()
+    val floodHazardAreasListState = mutableStateListOf<FloodHazardAreaData>()
 
     val mapState: MutableState<MapState> = mutableStateOf(
         MapState(
@@ -129,14 +129,14 @@ class SharedViewModel : ViewModel() {
 
     // TODO: List of Hazard (retrieve)
 
-    fun retrieveHazardAreasFromDB() {
+    fun retrieveFloodHazardAreasFromDB() {
         db.collection("markers")
             .addSnapshotListener { result, error ->
 
-                hazardAreasListState.clear()
+                floodHazardAreasListState.clear()
                 for (hazardAreaDocument in result!!.documents)
-                    hazardAreasListState.add(
-                        HazardAreaData(
+                    floodHazardAreasListState.add(
+                        FloodHazardAreaData(
                             hazardAreaID = hazardAreaDocument["uniqueID"].toString(),
                             address = hazardAreaDocument["address"].toString(),
                             barangay = hazardAreaDocument["barangay"].toString(),
@@ -144,7 +144,7 @@ class SharedViewModel : ViewModel() {
                             coordinates = hazardAreaDocument["coordinates"] as GeoPoint,
                             riskLevel = hazardAreaDocument["risk_level"].toString()
                         )
-                    ) //hazardAreasListState.add
+                    ) //floodHazardAreasListState.add
             } //.addOnSuccessListener
     } //fun retrieveReportsFromDB
 

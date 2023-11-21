@@ -114,7 +114,7 @@ fun Header (user: User, timePosted: Timestamp) {
                 Text(
                     color = colorScheme.onBackground,
                     style = typography.titleMedium,
-                    text = user.firstName
+                    text = "${user.firstName} ${user.lastName}"
                 )
 
                 val formattedTimestamp = SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
