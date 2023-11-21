@@ -13,6 +13,6 @@ data class WeatherData(
     ),
     val cnt: Int = 0,
     val cod: String = "",
-    val list: List<WeatherList> = emptyList(),
+    val list: List<WeatherList> = mutableListOf(),
     val message: Int = 0
 )

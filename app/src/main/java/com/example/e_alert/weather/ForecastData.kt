@@ -15,14 +15,14 @@ data class ForecastData(
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             val formattedDate = dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
             val temperature = (weatherList.main.temp - 273.15).toInt()
-            val weatherDescription = (weatherList.weather as Map<*,*>)
-            val iconCode = weatherDescription["icon"] as String
+            val weatherDescription = weatherList.weather[0]
+            val iconCode = weatherDescription.icon
             val iconUrl = "https://openweathermap.org/img/w/$iconCode.png"
 
             return ForecastData(
                 date = formattedDate!!,
                 temperature = temperature,
-                weatherDescription = weatherDescription["description"] as String,
+                weatherDescription = weatherDescription.description,
                 iconUrl = iconUrl
             )
         }
