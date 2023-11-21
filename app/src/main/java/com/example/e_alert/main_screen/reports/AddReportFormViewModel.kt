@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.e_alert.repository.AuthRepository
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.FieldValue
@@ -15,7 +14,6 @@ import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ServerTimestamp
 import com.google.maps.android.compose.CameraPositionState
-import kotlinx.coroutines.launch
 import kotlin.Error
 import kotlin.random.Random
 
@@ -70,7 +68,7 @@ class AddReportFormViewModel : ViewModel() {
         addReportFormUIState = addReportFormUIState.copy(barangay = barangay)
     }
 
-    fun createPost () = viewModelScope.launch {
+    fun createPost () {
         val randomNumber = Random.nextInt(90000) + 10000
         val reportID = "RE$randomNumber"
 
