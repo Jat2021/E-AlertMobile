@@ -13,11 +13,11 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class WeatherViewModel : ViewModel() {
-    private val apiKey = "6378430bc45061aaccd4a566a86c25df"
+    private val apiKey = "09a595a6bc40c48f3e7356ffcb5b18dc"
     private val latitude = 13.617
     private val longitude = 123.183
 
-    val baseURL = "https://api.openweathermap.org/data/2.5/"
+    private val baseURL = "https://api.openweathermap.org/data/2.5/"
 
     private var weatherData : WeatherData = WeatherData()
     private var filteredWeatherList : MutableList<WeatherList> = emptyList<WeatherList>().toMutableList()

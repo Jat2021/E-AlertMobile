@@ -1,7 +1,10 @@
 package com.example.e_alert.main_screen.home
 
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
@@ -79,24 +83,48 @@ fun BottomSheetHome(
         ) {
             Row (
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
+                    .padding(8.dp)
+                    .fillMaxWidth(1f)
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 weatherForecast.forEach { forecastData ->
-                    Row (
-                        modifier = Modifier.padding(8.dp)
+                    Box (
+                        modifier = Modifier
+                            .background(colorScheme.primaryContainer)
+                            .padding(8.dp)
                     ) {
                         Column (
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(text = forecastData.date)
+                            Text(
+                                style = typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                text = forecastData.dayOfTheWeek
+                            )
+
+                            Text(
+                                style = typography.bodySmall,
+                                fontWeight = FontWeight.Normal,
+                                text = "${forecastData.month} ${forecastData.day}"
+                            )
+
                             AsyncImage(
                                 model = forecastData.iconUrl,
                                 contentScale = ContentScale.Fit,
                                 contentDescription = null,
                             )
-                            Text(text = "${forecastData.temperature} C")
-                            Text(text = forecastData.weatherDescription)
+
+                            Text(
+                                style = typography.headlineSmall,
+                                fontWeight = FontWeight.Light,
+                                text = "${forecastData.temperature} ℃"
+                            )
+
+                            Text(
+                                style = typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                text = forecastData.weatherDescription.uppercase())
                         } //Column
                     }
                 } //weatherForecast.forEach
