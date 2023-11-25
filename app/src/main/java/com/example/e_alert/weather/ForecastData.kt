@@ -23,7 +23,7 @@ data class ForecastData(
             val temperature = (weatherList.main.temp - 273.15).toInt()
             val weatherDescription = weatherList.weather[0]
             val iconCode = weatherDescription.icon
-            val iconUrl = "https://openweathermap.org/img/w/$iconCode.png"
+            val iconUrl = "https://openweathermap.org/img/w/${iconCode}.png"
 
             return ForecastData(
                 day = day,

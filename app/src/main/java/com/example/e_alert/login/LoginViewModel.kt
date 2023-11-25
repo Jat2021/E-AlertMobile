@@ -118,8 +118,8 @@ class LoginViewModel(
     val listOfBarangayState = mutableStateListOf<String>()
 
     fun retrieveBarangayListFromDB () {
-        db.collection("Report")
-            .orderBy("name", Query.Direction.DESCENDING)
+        db.collection("Barangay")
+            .orderBy("name", Query.Direction.ASCENDING)
             .addSnapshotListener { result, error ->
 
                 listOfBarangayState.clear()

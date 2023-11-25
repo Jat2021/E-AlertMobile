@@ -12,8 +12,15 @@ import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+sealed class FloodHazardStatus (val status : String) {
+    object VeryLowToNone : FloodHazardStatus(status = "Very Low to None")
+    object Low : FloodHazardStatus(status = "Low")
+    object Medium : FloodHazardStatus(status = "Medium")
+    object High : FloodHazardStatus(status = "High")
+}
+
 class WeatherViewModel : ViewModel() {
-    private val apiKey = "09a595a6bc40c48f3e7356ffcb5b18dc"
+    private val apiKey = "6378430bc45061aaccd4a566a86c25df"
     private val latitude = 13.617
     private val longitude = 123.183
 
@@ -21,6 +28,7 @@ class WeatherViewModel : ViewModel() {
 
     private var weatherData : WeatherData = WeatherData()
     private var filteredWeatherList : MutableList<WeatherList> = emptyList<WeatherList>().toMutableList()
+
 
     fun fetchWeatherData () = viewModelScope.launch(Dispatchers.IO) {
         val url = "${baseURL}forecast?lat=$latitude&lon=$longitude&appid=$apiKey"
@@ -32,14 +40,14 @@ class WeatherViewModel : ViewModel() {
 
             if (!response.isSuccessful) throw IOException("Unexpected code $response")
 
-            val gson : Gson = Gson()
+            val gson = Gson()
             val data = gson.fromJson(response.body?.string(), WeatherData::class.java)
 
             weatherData = data
 
             filteredWeatherList = weatherData.list.filter { weatherList ->
-                LocalDateTime.parse(weatherList.dt_txt, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                    .hour == 12
+                LocalDateTime.parse(weatherList.dt_txt,
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).hour == 12
             }.toMutableList()
 
             //Log.d("WeatherData", "WeatherData data: ${weatherData.list[0]}")
@@ -52,6 +60,8 @@ class WeatherViewModel : ViewModel() {
     fun get5DayForecast () : List<ForecastData> {
         val forecastDataList : MutableList<ForecastData> = mutableListOf()
 
+
+
         filteredWeatherList = weatherData.list.filter { weatherList ->
             LocalDateTime.parse(weatherList.dt_txt, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
                 .hour == 12
@@ -61,8 +71,6 @@ class WeatherViewModel : ViewModel() {
             forecastDataList.add(ForecastData.fromJson(it))
         }
 
-
-        Log.d("WeatherData", "weatherData.list[0]: ${weatherData.list[0]}")
         return forecastDataList
     }
 
@@ -79,26 +87,32 @@ class WeatherViewModel : ViewModel() {
         return rainVolume
     }
 
-    fun checkCurrentHazardRisk() : String {
-        var hazardRisk : String = ""
+    fun checkCurrentFloodHazard() : FloodHazardStatus? {
+        var hazardStatus : FloodHazardStatus? = null
+
+        Log.d("weatherData.list[0] @ checkCurrentFloodHazard",
+            "weatherData.list[0]: ${weatherData.list[0]}")
 
         val rain1 = weatherData.list[0].rain.`3h`
         val rain2 = weatherData.list[1].rain.`3h`
         val rain3 = weatherData.list[2].rain.`3h`
 
         if ((rain1 in 6.5..15.0) && (rain2 in 6.5..15.0) && (rain3 in 6.5..15.0)) {
-            hazardRisk = "low"
+            hazardStatus = FloodHazardStatus.Low
         }
 
         else if ((rain1 > 15.0 && rain1 <= 30.0) && (rain2 > 15.0 && rain2 <= 30.0)
             && (rain3 > 15.0 && rain3 <= 30.0)) {
-            hazardRisk = "Medium"
+            hazardStatus = FloodHazardStatus.Medium
         }
 
         else if (rain1 > 30.0 && rain2 > 30.0 && rain3 > 30.0) {
-            hazardRisk = "High"
+            hazardStatus = FloodHazardStatus.High
         }
 
-        return hazardRisk
-    } //fun checkCurrentHazardRisk()
+        else if ((rain1 < 6.5) && (rain2 < 6.5) && (rain3 < 6.5))
+            hazardStatus = FloodHazardStatus.VeryLowToNone
+
+        return hazardStatus
+    } //fun checkCurrentFloodHazard()
 }

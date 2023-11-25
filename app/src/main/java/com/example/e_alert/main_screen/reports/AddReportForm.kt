@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.view.MotionEvent
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.rounded.AddPhotoAlternate
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.MyLocation
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -76,8 +78,10 @@ import java.util.Locale
 
 @SuppressLint("RememberReturnType")
 @Composable
-fun AddReportForm(addReportFormViewModel: AddReportFormViewModel? = null,
-      navController : NavHostController) {
+fun AddReportForm(
+    addReportFormViewModel: AddReportFormViewModel? = null,
+      navController : NavHostController
+) {
     addReportFormViewModel!!.retrieveBarangayListFromDB()
     val pinnedLocation = addReportFormViewModel.pinnedLocationState
 
@@ -117,19 +121,42 @@ fun AddReportForm(addReportFormViewModel: AddReportFormViewModel? = null,
             onClick = { /*TODO*/ }
         ) { Text(text = "Cancel") }
 
-        Button(
-            modifier =Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.small,
-            onClick = {
-                addReportFormViewModel.createPost()
+        val context = LocalContext.current
+
+        LaunchedEffect(addReportFormViewModel.createPostState.value) {
+            if(addReportFormViewModel.createPostState.value is CreatePostState.Successful) {
+                Toast.makeText(context, addReportFormViewModel.createPostState.value.message,
+                    Toast.LENGTH_SHORT).show()
+
                 navController.navigate(Navigation.REPORTS_PAGE) {
                     launchSingleTop = true
                     popUpTo(MainScreen.ReportsPage.route)
                 }
             }
-        ) { Text(text = "Submit") }
+
+            if (addReportFormViewModel.createPostState.value is CreatePostState.Failure) {
+                Toast.makeText(context, addReportFormViewModel.createPostState.value.message,
+                    Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.small,
+            onClick = {
+                addReportFormViewModel.createPostState.value = CreatePostState.Loading
+                addReportFormViewModel.createPost()
+            } //onClick
+        ) {
+            if (addReportFormViewModel.createPostState.value == CreatePostState.Loading)
+                CircularProgressIndicator()
+            else
+                Text(text = "Submit")
+        } //Button
     }
 } //AddReportForm()
+
+
 
 @Composable
 fun DetailsSection(addReportFormViewModel: AddReportFormViewModel? = null) {
@@ -205,8 +232,8 @@ fun LocationOnMap (addReportFormViewModel: AddReportFormViewModel?) {
             .debounce(200)
             .collect { newPosition ->
                 addReportFormViewModel.setCoordinatesAsGeopoint(newPosition)
-                addReportFormViewModel.pinnedLocationState = LatLng(newPosition.latitude,newPosition.longitude)
-
+                addReportFormViewModel.pinnedLocationState =
+                    LatLng(newPosition.latitude,newPosition.longitude)
             }
     }
 
@@ -426,7 +453,8 @@ fun BarangayDropdownMenu(addReportFormViewModel : AddReportFormViewModel? = null
             expanded = isExpanded,
             onDismissRequest = { isExpanded = false }
         ) {
-            addReportFormViewModel!!.listOfBarangayState.forEach { barangayItem ->
+            Log.d("List of Barangay", addReportFormViewModel!!.listOfBarangayState[0])
+            addReportFormViewModel.listOfBarangayState.forEach { barangayItem ->
                 DropdownMenuItem(
                     text = { Text(text = barangayItem) },
                     onClick = {

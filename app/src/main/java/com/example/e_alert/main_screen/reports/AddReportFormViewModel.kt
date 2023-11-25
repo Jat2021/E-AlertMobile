@@ -1,6 +1,7 @@
 package com.example.e_alert.main_screen.reports
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +35,13 @@ data class Barangay (
     var barangayName : String = ""
 )
 
+sealed class CreatePostState (var message : String? = null) {
+    object Default : CreatePostState()
+    object Loading : CreatePostState()
+    object Successful : CreatePostState(message = "Successfully created a Report")
+    object Failure : CreatePostState(message = "Cannot create a Report")
+}
+
 sealed class Error (var message : String) {
     object EmptyDescriptionField : Error("Description is empty")
     object EmptyStreetField : Error("Street is empty")
@@ -42,15 +50,22 @@ sealed class Error (var message : String) {
 }
 
 class AddReportFormViewModel : ViewModel() {
-
     private val db = FirebaseFirestore.getInstance()
+
 
     private var addReportFormUIState by mutableStateOf(NewPost())
 
+    private var _createPostState : CreatePostState = CreatePostState.Default
+    var createPostState = mutableStateOf(_createPostState)
+
     var pinnedLocationState by mutableStateOf(LatLng(13.621775, 123.194824))
 
+
     lateinit var cameraPositionState : CameraPositionState
+
+    
     var isScrollEnabled by mutableStateOf(true)
+
 
     fun onDescriptionFieldChange(description : String) {
         addReportFormUIState = addReportFormUIState.copy(description = description)
@@ -86,17 +101,18 @@ class AddReportFormViewModel : ViewModel() {
                 "Hazard_Status" to addReportFormUIState.hazardStatus
             ) //hashMapOf
         ) //db.collection(...).add
-            .addOnSuccessListener { addReportFormUIState.successfullyCreated = true }
-            .addOnFailureListener { addReportFormUIState.successfullyCreated = false }
+            .addOnSuccessListener {
+                createPostState.value = CreatePostState.Successful
+                Log.d("createPostState@addOnSuccessListener", "${createPostState.value}") }
+            .addOnFailureListener { createPostState.value = CreatePostState.Failure}
     }
 
     val listOfBarangayState = mutableStateListOf<String>()
 
     fun retrieveBarangayListFromDB () {
-        db.collection("Report")
-            .orderBy("name", Query.Direction.DESCENDING)
+        db.collection("Barangay")
+            .orderBy("name", Query.Direction.ASCENDING)
             .addSnapshotListener { result, error ->
-
                 listOfBarangayState.clear()
                 for (barangayDocument in result!!.documents)
                     listOfBarangayState.add(

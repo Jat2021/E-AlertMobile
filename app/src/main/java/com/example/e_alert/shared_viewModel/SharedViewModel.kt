@@ -19,7 +19,7 @@ data class ReportData(
         profilePhoto = null
     ),
     val reportID: String = "",
-    val timestamp: Timestamp,
+    val timestamp: Timestamp?,
     val images : List<Uri>? = null,
     val reportType : String = "",
     val reportLocation : Location = Location(
@@ -54,9 +54,18 @@ data class FloodHazardAreaData (
     val riskLevel : String = ""
 )
 
+data class AccidentHazardAreaData (
+    val hazardAreaID : String = "",
+    val address : String = "",
+    val barangay : String = "",
+    val street : String = "",
+    val coordinates: GeoPoint = GeoPoint(0.0, 0.0),
+)
+
 class SharedViewModel : ViewModel() {
     val reportsListState = mutableStateListOf<ReportData>()
     val floodHazardAreasListState = mutableStateListOf<FloodHazardAreaData>()
+    val accidentHazardAreasListState = mutableStateListOf<AccidentHazardAreaData>()
 
     val mapState: MutableState<MapState> = mutableStateOf(
         MapState(
@@ -94,9 +103,7 @@ class SharedViewModel : ViewModel() {
         db.collection("Report")
             .orderBy("Timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { report, error ->
-
-                reportsListState.clear()
-                for (reportDocument in report!!.documents)
+                for (reportDocument in report!!.documents) {
                     db.collection("User").document(reportDocument["User_ID"].toString())
                         .addSnapshotListener() { user, errors ->
                             reportsListState.add(
@@ -107,7 +114,7 @@ class SharedViewModel : ViewModel() {
                                         profilePhoto = null
                                     ),
                                     reportID = reportDocument["Report_ID"].toString(),
-                                    timestamp = reportDocument["Timestamp"] as Timestamp,
+                                    timestamp = reportDocument["Timestamp"] as Timestamp?,
                                     images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
                                     reportType = reportDocument["Report_Hazard_Type"].toString(),
                                     reportDescription = reportDocument["Report_Description"].toString(),
@@ -122,15 +129,31 @@ class SharedViewModel : ViewModel() {
                                 )
                             ) //reportsListState.add
                         }
-
+                }
+                reportsListState.clear()
             } //.addOnSuccessListener
     } //fun retrieveReportsFromDB
 
-
-    // TODO: List of Hazard (retrieve)
-
     fun retrieveFloodHazardAreasFromDB() {
         db.collection("markers")
+            .addSnapshotListener { result, error ->
+
+                accidentHazardAreasListState.clear()
+                for (hazardAreaDocument in result!!.documents)
+                    accidentHazardAreasListState.add(
+                        AccidentHazardAreaData(
+                            hazardAreaID = hazardAreaDocument["uniqueID"].toString(),
+                            address = hazardAreaDocument["address"].toString(),
+                            barangay = hazardAreaDocument["barangay"].toString(),
+                            street = hazardAreaDocument["street"].toString(),
+                            coordinates = hazardAreaDocument["coordinates"] as GeoPoint,
+                        )
+                    ) //floodHazardAreasListState.add
+            } //.addOnSuccessListener
+    } //fun retrieveReportsFromDB
+
+    fun retrieveAccidentHazardAreasFromDB() {
+        db.collection("Road_Accident_Areas")
             .addSnapshotListener { result, error ->
 
                 floodHazardAreasListState.clear()
@@ -147,5 +170,4 @@ class SharedViewModel : ViewModel() {
                     ) //floodHazardAreasListState.add
             } //.addOnSuccessListener
     } //fun retrieveReportsFromDB
-
-}
+} //class SharedViewModel

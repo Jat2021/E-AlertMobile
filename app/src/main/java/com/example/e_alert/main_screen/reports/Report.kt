@@ -94,7 +94,7 @@ fun Report (data : ReportData) {
 }
 
 @Composable
-fun Header (user: User, timePosted: Timestamp) {
+fun Header (user: User, timePosted: Timestamp?) {
     //TODO: Includes profile photo, Username (from DB)
     Row (modifier = Modifier
         .padding(16.dp, 16.dp, 8.dp, 16.dp)
@@ -117,13 +117,14 @@ fun Header (user: User, timePosted: Timestamp) {
                     text = "${user.firstName} ${user.lastName}"
                 )
 
-                val formattedTimestamp = SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
-                    .format(timePosted.toDate())
+                val formattedTimestamp = if (timePosted != null)
+                    SimpleDateFormat("hh:mm aa", java.util.Locale.getDefault())
+                        .format(timePosted.toDate()) else null
 
                 Text(
                     color = colorScheme.onSurfaceVariant,
                     style = typography.titleSmall,
-                    text = formattedTimestamp)
+                    text = formattedTimestamp.toString())
             }
         } //Row [User]
 

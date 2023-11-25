@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CrisisAlert
 import androidx.compose.material.icons.filled.Flood
@@ -25,16 +26,16 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
 import com.example.e_alert.BottomSheet
+import com.example.e_alert.shared_viewModel.AccidentHazardAreaData
 import com.example.e_alert.shared_viewModel.FloodHazardAreaData
 import com.example.e_alert.shared_viewModel.ReportData
 import com.example.e_alert.shared_viewModel.SharedViewModel
@@ -52,18 +53,21 @@ fun HomePage () {
     val sharedViewModel : SharedViewModel = viewModel(LocalContext.current as ComponentActivity)
     val weatherViewModel : WeatherViewModel = viewModel(LocalContext.current as ComponentActivity)
 
-    //LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = Unit) {
         weatherViewModel.fetchWeatherData()
-    //}
-
+    }
 
     sharedViewModel.retrieveReportsFromDB()
     sharedViewModel.retrieveFloodHazardAreasFromDB()
+    sharedViewModel.retrieveAccidentHazardAreasFromDB()
 
     Map(
-        listOfHazardAreas = sharedViewModel.floodHazardAreasListState,
+        weatherViewModel = weatherViewModel,
+        listOfFloodHazardAreas = sharedViewModel.floodHazardAreasListState,
+        listOfAccidentHazardAreas = sharedViewModel.accidentHazardAreasListState,
         listOfReports = sharedViewModel.reportsListState
     )
+
     BottomSheetHome(
         sharedViewModel = sharedViewModel,
         weatherViewModel = weatherViewModel
@@ -78,8 +82,9 @@ fun BottomSheetHome(
         val weatherForecast = weatherViewModel.get5DayForecast()
 
         Column(
-            Modifier
+            modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
         ) {
             Row (
                 modifier = Modifier
@@ -109,11 +114,14 @@ fun BottomSheetHome(
                                 text = "${forecastData.month} ${forecastData.day}"
                             )
 
-                            AsyncImage(
-                                model = forecastData.iconUrl,
-                                contentScale = ContentScale.Fit,
-                                contentDescription = null,
-                            )
+//                            val painter = rememberAsyncImagePainter(
+//                                model = forecastData.iconUrl
+//                            )
+//
+//                            Image(painter = painter, contentDescription = "Weather icon")
+//
+//                            if (painter.state is AsyncImagePainter.State.Loading)
+//                                CircularProgressIndicator()
 
                             Text(
                                 style = typography.headlineSmall,
@@ -150,15 +158,89 @@ fun BottomSheetHome(
 
             Divider(modifier = Modifier.padding(8.dp))
 
+//            var currentFloodHazard by remember {
+//                mutableStateOf(weatherViewModel.checkCurrentFloodHazard())
+//            }
+//
+//            LaunchedEffect(key1 = weatherViewModel.checkCurrentFloodHazard()) {
+//                currentFloodHazard = weatherViewModel.checkCurrentFloodHazard()
+//            }
+
+//            Card(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(vertical = 1.dp)
+//            ) {
+//                when (currentFloodHazard) {
+//                    FloodHazardStatus.Low -> {
+//                        sharedViewModel.floodHazardAreasListState.filter {
+//                            it.riskLevel == FloodHazardStatus.High.status
+//                        }.forEach { floodHazardAreaData ->
+//                            FloodHazardAreaListItem(floodHazardArea = floodHazardAreaData)
+//                        }
+//                    }
+//
+//                    FloodHazardStatus.Medium -> {
+//                        sharedViewModel.floodHazardAreasListState.filter {
+//                            it.riskLevel == FloodHazardStatus.High.status &&
+//                                it.riskLevel == FloodHazardStatus.Medium.status
+//                        }.forEach { floodHazardAreaData ->
+//                            FloodHazardAreaListItem(floodHazardArea = floodHazardAreaData)
+//                        }
+//                    }
+//
+//                    FloodHazardStatus.High -> {
+//                        sharedViewModel.floodHazardAreasListState.forEach { floodHazardAreaData ->
+//                            FloodHazardAreaListItem(floodHazardArea = floodHazardAreaData)
+//                        }
+//                    }
+//
+//                    FloodHazardStatus.VeryLowToNone -> {
+//                        Box(modifier = Modifier.padding(16.dp),
+//                            contentAlignment = Alignment.Center
+//                        ) {
+//                            Text(
+//                                modifier = Modifier,
+//                                textAlign = TextAlign.Center,
+//                                text = "No flood hazard today")
+//                        }
+//                    }
+//
+//                    else -> {
+//                        Text(text = "Cannot get Flood Hazard Areas")
+//                    }
+//                } //when statement
+//            } //Card
+//
+//            Spacer(modifier = Modifier.height(16.dp))
+
+            Row (
+                modifier = Modifier.padding(horizontal = 8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.CrisisAlert,
+                    contentDescription = null,
+                    tint = colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Text(
+                    style = typography.titleMedium,
+                    text = "Accident Hazard Areas")
+            }
+
+            Divider(modifier = Modifier.padding(8.dp))
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 1.dp)
             ) {
-                sharedViewModel.floodHazardAreasListState.forEach { floodHazardAreaData -> 
-                    FloodHazardAreaListItem(floodHazardArea = floodHazardAreaData)
+                sharedViewModel.accidentHazardAreasListState.forEach { accidentHazardAreaData ->
+                    AccidentHazardAreaListItem(accidentHazardArea = accidentHazardAreaData)
                 }
-            } //Card
+            }
         } //Box
     } //BottomSheet
 }
@@ -186,9 +268,31 @@ fun FloodHazardAreaListItem (floodHazardArea : FloodHazardAreaData) {
 } //fun FloodHazardAreaListItem
 
 @Composable
+fun AccidentHazardAreaListItem (accidentHazardArea : AccidentHazardAreaData) {
+    val floodIcon = Icons.Filled.Flood
+    val hazardID = accidentHazardArea.hazardAreaID
+    val street = accidentHazardArea.street
+    val barangay = accidentHazardArea.barangay
+
+    ListItem(
+        overlineContent = { Text(hazardID) },
+        headlineContent = { Text("$street, $barangay") },
+        leadingContent = {
+            Icon(
+                imageVector = floodIcon,
+                contentDescription = null,
+            )
+        },
+        trailingContent = { Text(text = "Report(s)") }
+    )
+} //fun AccidentHazardAreaListItem
+
+@Composable
 fun Map(
-    listOfHazardAreas: SnapshotStateList<FloodHazardAreaData>,
-    listOfReports: SnapshotStateList<ReportData>
+    listOfFloodHazardAreas: SnapshotStateList<FloodHazardAreaData>,
+    listOfAccidentHazardAreas: SnapshotStateList<AccidentHazardAreaData>,
+    listOfReports: SnapshotStateList<ReportData>,
+    weatherViewModel: WeatherViewModel
 ) {
     val nagaCity = LatLng(13.621775, 123.194824)
     val cameraPositionState = rememberCameraPositionState {
@@ -199,17 +303,76 @@ fun Map(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState
     ) {
-        listOfHazardAreas.forEach { hazardArea ->
+//        var currentFloodHazard by remember {
+//            mutableStateOf(weatherViewModel.checkCurrentFloodHazard())
+//        }
+
+//        LaunchedEffect(key1 = weatherViewModel.checkCurrentFloodHazard()) {
+//            currentFloodHazard = weatherViewModel.checkCurrentFloodHazard()
+//        }
+//
+//        when (currentFloodHazard) {
+//            FloodHazardStatus.Low -> {
+//                listOfFloodHazardAreas.filter {
+//                    it.riskLevel == FloodHazardStatus.High.status
+//                }.forEach { floodHazardArea ->
+//                    val hazardCoordinates = LatLng(
+//                        floodHazardArea.coordinates.latitude,
+//                        floodHazardArea.coordinates.longitude
+//                    )
+//
+//                    Marker(
+//                        state = MarkerState(position = hazardCoordinates),
+//                        title = floodHazardArea.hazardAreaID
+//                    )
+//                } //listOfFloodHazardAreas.forEach
+//            }
+//
+//            FloodHazardStatus.Medium -> {
+//                listOfFloodHazardAreas.filter {
+//                    it.riskLevel == FloodHazardStatus.High.status &&
+//                            it.riskLevel == FloodHazardStatus.Medium.status
+//                }.forEach { floodHazardArea ->
+//                    val hazardCoordinates = LatLng(
+//                        floodHazardArea.coordinates.latitude,
+//                        floodHazardArea.coordinates.longitude
+//                    )
+//
+//                    Marker(
+//                        state = MarkerState(position = hazardCoordinates),
+//                        title = floodHazardArea.hazardAreaID
+//                    )
+//                } //listOfFloodHazardAreas.forEach
+//            }
+//
+//            FloodHazardStatus.High -> {
+//                listOfFloodHazardAreas.forEach { floodHazardArea ->
+//                    val hazardCoordinates = LatLng(
+//                        floodHazardArea.coordinates.latitude,
+//                        floodHazardArea.coordinates.longitude
+//                    )
+//
+//                    Marker(
+//                        state = MarkerState(position = hazardCoordinates),
+//                        title = floodHazardArea.hazardAreaID
+//                    )
+//                } //listOfFloodHazardAreas.forEach
+//            }
+//
+//            else -> { }
+//        } //when statement
+
+        listOfAccidentHazardAreas.forEach { accidentHazardArea ->
             val hazardCoordinates = LatLng(
-                hazardArea.coordinates.latitude,
-                hazardArea.coordinates.longitude
+                accidentHazardArea.coordinates.latitude,
+                accidentHazardArea.coordinates.longitude
             )
 
             Marker(
                 state = MarkerState(position = hazardCoordinates),
-                title = hazardArea.hazardAreaID
+                title = accidentHazardArea.hazardAreaID
             )
-        } //listOfHazardAreas.forEach
+        }
 
         listOfReports.forEach { report ->
             val reportCoordinates = LatLng(
