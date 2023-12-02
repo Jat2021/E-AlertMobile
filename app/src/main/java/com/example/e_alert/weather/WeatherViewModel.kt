@@ -1,6 +1,10 @@
 package com.example.e_alert.weather
 
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
@@ -26,14 +30,23 @@ class WeatherViewModel : ViewModel() {
 
     private val baseURL = "https://api.openweathermap.org/data/2.5/"
 
-    private var weatherData : WeatherData = WeatherData()
-    private var filteredWeatherList : MutableList<WeatherList> = emptyList<WeatherList>().toMutableList()
+    var fiveDayForecastList = mutableStateListOf<ForecastData>()
 
+    private var _floodHazardStatus : FloodHazardStatus? = null
+    var floodHazardStatus by mutableStateOf(_floodHazardStatus)
 
-    fun fetchWeatherData () = viewModelScope.launch(Dispatchers.IO) {
+    init {
+        getFiveDayForecast().start()
+        //checkCurrentFloodHazard().start()
+    }
+
+    //This returns a list of 5-day forecast
+    private fun getFiveDayForecast () = viewModelScope.launch(Dispatchers.IO) {
         val url = "${baseURL}forecast?lat=$latitude&lon=$longitude&appid=$apiKey"
         val client = OkHttpClient()
         val request = Request.Builder().url(url).build()
+
+        val weatherData : WeatherData
 
         try {
             val response = client.newCall(request).execute()
@@ -41,78 +54,70 @@ class WeatherViewModel : ViewModel() {
             if (!response.isSuccessful) throw IOException("Unexpected code $response")
 
             val gson = Gson()
-            val data = gson.fromJson(response.body?.string(), WeatherData::class.java)
+            val data : WeatherData = gson.fromJson(response.body?.string(), WeatherData::class.java)
 
             weatherData = data
-
-            filteredWeatherList = weatherData.list.filter { weatherList ->
-                LocalDateTime.parse(weatherList.dt_txt,
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).hour == 12
-            }.toMutableList()
-
-            //Log.d("WeatherData", "WeatherData data: ${weatherData.list[0]}")
         } catch (e : Exception) {
             throw e
         }
-    }
 
-    //This returns a list of 5-day forecast
-    fun get5DayForecast () : List<ForecastData> {
-        val forecastDataList : MutableList<ForecastData> = mutableListOf()
+        Log.d("WeatherData @giveFiveDayForecast()","weatherData.list[0]: ${weatherData.list[0]}")
 
-
-
-        filteredWeatherList = weatherData.list.filter { weatherList ->
-            LocalDateTime.parse(weatherList.dt_txt, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                .hour == 12
-        }.toMutableList()
+        val filteredWeatherList = weatherData.list.filter { weatherList ->
+            LocalDateTime.parse(weatherList.dt_txt,
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).hour == 12
+        }
 
         filteredWeatherList.forEach {
-            forecastDataList.add(ForecastData.fromJson(it))
+            fiveDayForecastList.add(ForecastData().fromJson(it))
         }
 
-        return forecastDataList
+        Log.d("FiveDayForecast @giveFiveDayForecast()","fiveDayForecastList: ${fiveDayForecastList[0]}")
     }
 
-    fun getRainForecast () : List<String> {
-        val rainVolume : MutableList<String> = emptyList<String>().toMutableList()
+    private fun checkCurrentFloodHazard() = viewModelScope.launch(Dispatchers.IO) {
+        val url = "${baseURL}forecast?lat=$latitude&lon=$longitude&appid=$apiKey"
+        val client = OkHttpClient()
+        val request = Request.Builder().url(url).build()
 
-        for (i in 0..2) {
-            val time = LocalDateTime.now()
+        val weatherData : WeatherData
 
-            rainVolume.add(
-                "Rain Volume [${time.hour}:${time.minute}] ${weatherData.list[i].rain.`3h`} mm."
-            )
-        }
-        return rainVolume
-    }
+        try {
+            val response = client.newCall(request).execute()
 
-    fun checkCurrentFloodHazard() : FloodHazardStatus? {
-        var hazardStatus : FloodHazardStatus? = null
+            if (!response.isSuccessful) throw IOException("Unexpected code $response")
 
-        Log.d("weatherData.list[0] @ checkCurrentFloodHazard",
-            "weatherData.list[0]: ${weatherData.list[0]}")
+            val gson = Gson()
+            val data : WeatherData = gson.fromJson(response.body?.string(), WeatherData::class.java)
 
-        val rain1 = weatherData.list[0].rain.`3h`
-        val rain2 = weatherData.list[1].rain.`3h`
-        val rain3 = weatherData.list[2].rain.`3h`
-
-        if ((rain1 in 6.5..15.0) && (rain2 in 6.5..15.0) && (rain3 in 6.5..15.0)) {
-            hazardStatus = FloodHazardStatus.Low
+            weatherData = data
+        } catch (e : Exception) {
+            throw e
         }
 
-        else if ((rain1 > 15.0 && rain1 <= 30.0) && (rain2 > 15.0 && rain2 <= 30.0)
-            && (rain3 > 15.0 && rain3 <= 30.0)) {
-            hazardStatus = FloodHazardStatus.Medium
+        Log.d("Rain.3h @checkCurrentFloodHazard()",
+            "weatherData.list[0].rain.`3h`: ${weatherData.list[0].rain.`3h`}")
+
+        val rain1 : Double? = weatherData.list[0].rain.`3h`
+        val rain2 : Double? = weatherData.list[1].rain.`3h`
+        val rain3 : Double? = weatherData.list[2].rain.`3h`
+
+
+        if ((rain1 != null) && (rain2 != null) && (rain3 != null)) {
+            if ((rain1 in 6.5..15.0) && (rain2 in 6.5..15.0) && (rain3 in 6.5..15.0)) {
+                floodHazardStatus = FloodHazardStatus.Low
+            }
+            if ((rain1 > 15.0 && rain1 <= 30.0) && (rain2 > 15.0 && rain2 <= 30.0)
+                && (rain3 > 15.0 && rain3 <= 30.0)) {
+                floodHazardStatus = FloodHazardStatus.Medium
+            }
+
+            else if (rain1 > 30.0 && rain2 > 30.0 && rain3 > 30.0) {
+                floodHazardStatus = FloodHazardStatus.High
+            }
+
+            else if ((rain1 < 6.5) && (rain2 < 6.5) && (rain3 < 6.5))
+                floodHazardStatus = FloodHazardStatus.VeryLowToNone
         }
-
-        else if (rain1 > 30.0 && rain2 > 30.0 && rain3 > 30.0) {
-            hazardStatus = FloodHazardStatus.High
-        }
-
-        else if ((rain1 < 6.5) && (rain2 < 6.5) && (rain3 < 6.5))
-            hazardStatus = FloodHazardStatus.VeryLowToNone
-
-        return hazardStatus
     } //fun checkCurrentFloodHazard()
 }

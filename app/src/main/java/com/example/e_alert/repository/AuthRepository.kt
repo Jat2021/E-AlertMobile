@@ -9,6 +9,7 @@ import kotlinx.coroutines.withContext
 class AuthRepository {
     fun hasUser() : Boolean = Firebase.auth.currentUser != null
 
+
     fun getUserId() : String = Firebase.auth.currentUser?.uid.orEmpty()
 
     suspend fun createUser(

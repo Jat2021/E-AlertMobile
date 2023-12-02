@@ -24,7 +24,7 @@ data class ReportData(
     val reportType : String = "",
     val reportLocation : Location = Location(
         street = "",
-        baranggay = "",
+        barangay = "",
         coordinates = GeoPoint(0.0,0.0)
     ),
     val reportDescription : String = "",
@@ -41,7 +41,7 @@ data class User(
 
 data class Location(
     val street: String,
-    val baranggay: String,
+    val barangay: String,
     val coordinates: GeoPoint
 )
 
@@ -120,7 +120,7 @@ class SharedViewModel : ViewModel() {
                                     reportDescription = reportDocument["Report_Description"].toString(),
                                     reportLocation = Location(
                                         street = reportDocument["Street"].toString(),
-                                        baranggay = reportDocument["Baranggay"].toString(),
+                                        barangay = reportDocument["Barangay"].toString(),
                                         coordinates = reportDocument["Coordinates"] as GeoPoint
                                     ),
                                     numberOfDislikes = 0,

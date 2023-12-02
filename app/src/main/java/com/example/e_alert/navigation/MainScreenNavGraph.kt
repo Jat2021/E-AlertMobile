@@ -1,13 +1,18 @@
 package com.example.e_alert.navigation
 
+import androidx.activity.ComponentActivity
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.e_alert.main_screen.home.HomePage
 import com.example.e_alert.main_screen.routes.RoutesPage
+import com.example.e_alert.shared_viewModel.SharedViewModel
+import com.example.e_alert.weather.WeatherViewModel
 
 sealed class MainScreen (var route : String) {
     object HomePage : MainScreen(route = "Home")
@@ -17,6 +22,9 @@ sealed class MainScreen (var route : String) {
 
 @Composable
 fun MainScreenNavGraph(navController : NavHostController) {
+    val sharedViewModel : SharedViewModel = viewModel(LocalContext.current as ComponentActivity)
+    val weatherViewModel : WeatherViewModel = viewModel(LocalContext.current as ComponentActivity)
+
     NavHost(
         navController = navController,
         startDestination = MainScreen.HomePage.route,
@@ -25,7 +33,10 @@ fun MainScreenNavGraph(navController : NavHostController) {
         exitTransition = { ExitTransition.None }
     ) {
         composable(route = MainScreen.HomePage.route) {
-            HomePage()
+            HomePage(
+                sharedViewModel = sharedViewModel,
+                weatherViewModel = weatherViewModel
+            )
         }
         reportsPageNavGraph(navController = navController)
         composable(route = MainScreen.RoutesPage.route) {

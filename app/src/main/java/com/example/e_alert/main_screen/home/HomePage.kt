@@ -1,6 +1,5 @@
 package com.example.e_alert.main_screen.home
 
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -26,14 +25,11 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.e_alert.BottomSheet
 import com.example.e_alert.shared_viewModel.AccidentHazardAreaData
 import com.example.e_alert.shared_viewModel.FloodHazardAreaData
@@ -49,13 +45,11 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import java.util.Locale
 
 @Composable
-fun HomePage () {
-    val sharedViewModel : SharedViewModel = viewModel(LocalContext.current as ComponentActivity)
-    val weatherViewModel : WeatherViewModel = viewModel(LocalContext.current as ComponentActivity)
+fun HomePage (
+    sharedViewModel : SharedViewModel,
+    weatherViewModel : WeatherViewModel
+) {
 
-    LaunchedEffect(key1 = Unit) {
-        weatherViewModel.fetchWeatherData()
-    }
 
     sharedViewModel.retrieveReportsFromDB()
     sharedViewModel.retrieveFloodHazardAreasFromDB()
@@ -77,10 +71,9 @@ fun HomePage () {
 @Composable
 fun BottomSheetHome(
     sharedViewModel: SharedViewModel,
-    weatherViewModel: WeatherViewModel) {
+    weatherViewModel: WeatherViewModel
+) {
     BottomSheet () {
-        val weatherForecast = weatherViewModel.get5DayForecast()
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -93,26 +86,36 @@ fun BottomSheetHome(
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                weatherForecast.forEach { forecastData ->
-                    Box (
+                if (weatherViewModel.fiveDayForecastList.isEmpty()) {
+                    Box(
                         modifier = Modifier
-                            .background(colorScheme.primaryContainer)
                             .padding(8.dp)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Column (
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        Text(text = "Cannot display 5-day Weather Forecast")
+                    }
+                } else {
+                    weatherViewModel.fiveDayForecastList.forEach { forecastData ->
+                        Box(
+                            modifier = Modifier
+                                .background(colorScheme.primaryContainer)
+                                .padding(8.dp)
                         ) {
-                            Text(
-                                style = typography.bodyLarge,
-                                fontWeight = FontWeight.SemiBold,
-                                text = forecastData.dayOfTheWeek
-                            )
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    style = typography.bodyLarge,
+                                    fontWeight = FontWeight.SemiBold,
+                                    text = forecastData.dayOfTheWeek
+                                )
 
-                            Text(
-                                style = typography.bodySmall,
-                                fontWeight = FontWeight.Normal,
-                                text = "${forecastData.month} ${forecastData.day}"
-                            )
+                                Text(
+                                    style = typography.bodySmall,
+                                    fontWeight = FontWeight.Normal,
+                                    text = "${forecastData.month} ${forecastData.day}"
+                                )
 
 //                            val painter = rememberAsyncImagePainter(
 //                                model = forecastData.iconUrl
@@ -123,19 +126,21 @@ fun BottomSheetHome(
 //                            if (painter.state is AsyncImagePainter.State.Loading)
 //                                CircularProgressIndicator()
 
-                            Text(
-                                style = typography.headlineSmall,
-                                fontWeight = FontWeight.Light,
-                                text = "${forecastData.temperature} ℃"
-                            )
+                                Text(
+                                    style = typography.headlineSmall,
+                                    fontWeight = FontWeight.Light,
+                                    text = "${forecastData.temperature} ℃"
+                                )
 
-                            Text(
-                                style = typography.labelMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                text = forecastData.weatherDescription.uppercase())
-                        } //Column
-                    }
-                } //weatherForecast.forEach
+                                Text(
+                                    style = typography.labelMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    text = forecastData.weatherDescription.uppercase()
+                                )
+                            } //Column
+                        }
+                    } //weatherForecast.forEach
+                } //else
             } //Column
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -158,20 +163,12 @@ fun BottomSheetHome(
 
             Divider(modifier = Modifier.padding(8.dp))
 
-//            var currentFloodHazard by remember {
-//                mutableStateOf(weatherViewModel.checkCurrentFloodHazard())
-//            }
-//
-//            LaunchedEffect(key1 = weatherViewModel.checkCurrentFloodHazard()) {
-//                currentFloodHazard = weatherViewModel.checkCurrentFloodHazard()
-//            }
-
 //            Card(
 //                modifier = Modifier
 //                    .fillMaxWidth()
 //                    .padding(vertical = 1.dp)
 //            ) {
-//                when (currentFloodHazard) {
+//                when (weatherViewModel.floodHazardStatus) {
 //                    FloodHazardStatus.Low -> {
 //                        sharedViewModel.floodHazardAreasListState.filter {
 //                            it.riskLevel == FloodHazardStatus.High.status
@@ -211,8 +208,8 @@ fun BottomSheetHome(
 //                    }
 //                } //when statement
 //            } //Card
-//
-//            Spacer(modifier = Modifier.height(16.dp))
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row (
                 modifier = Modifier.padding(horizontal = 8.dp)

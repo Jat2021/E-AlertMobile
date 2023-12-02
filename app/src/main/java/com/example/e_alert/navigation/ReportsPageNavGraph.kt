@@ -7,8 +7,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.example.e_alert.main_screen.reports.AddReportForm
-import com.example.e_alert.main_screen.reports.AddReportFormViewModel
+import com.example.e_alert.main_screen.reports.addReportForm.AddReportForm
+import com.example.e_alert.main_screen.reports.addReportForm.AddReportFormViewModel
 import com.example.e_alert.main_screen.reports.ReportsPage
 import com.example.e_alert.shared_viewModel.SharedViewModel
 

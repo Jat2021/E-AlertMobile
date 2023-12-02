@@ -1,5 +1,5 @@
 package com.example.e_alert.weather
 
 data class Rain(
-    val `3h`: Double = 0.0
+    val `3h`: Double? = 0.0
 )

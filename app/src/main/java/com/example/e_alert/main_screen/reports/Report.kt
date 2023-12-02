@@ -79,8 +79,8 @@ fun Report (data : ReportData) {
                 ) {
                     ReportTypeLabel(data.reportType)
                     ReportLocationLabel(
-                        reportLocation = "${data.reportLocation.baranggay}, " +
-                                data.reportLocation.street)
+                        reportLocation = "${data.reportLocation.street}, " +
+                                data.reportLocation.barangay)
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -180,8 +180,8 @@ fun ReportPhotos (images : List<Uri>) {
                         text = pageCounter
                     )
                 }
-            }
-        } //Row
+            } //Row
+        } //Box
     } //Box
 }
 
