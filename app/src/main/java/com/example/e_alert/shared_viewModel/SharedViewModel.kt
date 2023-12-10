@@ -1,12 +1,28 @@
 package com.example.e_alert.shared_viewModel
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
-import androidx.compose.runtime.MutableState
+import android.os.Looper
+import android.util.Log
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
@@ -22,15 +38,17 @@ data class ReportData(
     val timestamp: Timestamp?,
     val images : List<Uri>? = null,
     val reportType : String = "",
+    val hazardStatus : String = "",
+    val numberOfPersonsInvolved : String? = null,
+    val typesOfVehicleInvolved : List<String>? = null,
     val reportLocation : Location = Location(
-        street = "",
+        streetOrLandmark = "",
         barangay = "",
         coordinates = GeoPoint(0.0,0.0)
     ),
     val reportDescription : String = "",
     val numberOfLikes : Int = 0,
-    val numberOfDislikes : Int = 0,
-    val isVerified : Boolean = false
+    val numberOfDislikes : Int = 0
 )
 
 data class User(
@@ -40,7 +58,7 @@ data class User(
 )
 
 data class Location(
-    val street: String,
+    val streetOrLandmark: String,
     val barangay: String,
     val coordinates: GeoPoint
 )
@@ -49,7 +67,7 @@ data class FloodHazardAreaData (
     val hazardAreaID : String = "",
     val address : String = "",
     val barangay : String = "",
-    val street : String = "",
+    val streetOrLandmark : String = "",
     val coordinates: GeoPoint = GeoPoint(0.0, 0.0),
     val riskLevel : String = ""
 )
@@ -58,8 +76,14 @@ data class AccidentHazardAreaData (
     val hazardAreaID : String = "",
     val address : String = "",
     val barangay : String = "",
-    val street : String = "",
-    val coordinates: GeoPoint = GeoPoint(0.0, 0.0),
+    val streetOrLandmark : String = "",
+    val coordinates: GeoPoint = GeoPoint(0.0, 0.0)
+)
+
+data class FloodRiskLevel (
+    val min : Double = 0.0,
+    val max : Double = 0.0,
+    val number : Int
 )
 
 class SharedViewModel : ViewModel() {
@@ -67,37 +91,105 @@ class SharedViewModel : ViewModel() {
     val floodHazardAreasListState = mutableStateListOf<FloodHazardAreaData>()
     val accidentHazardAreasListState = mutableStateListOf<AccidentHazardAreaData>()
 
-    val mapState: MutableState<MapState> = mutableStateOf(
-        MapState(
-            lastKnownLocation = null,
-            reportPins = reportsListState
-        )
-    )
+
+    private val db = FirebaseFirestore.getInstance()
+
+    private lateinit var locationCallback : LocationCallback
+    private lateinit var fusedLocationProvider : FusedLocationProviderClient
 
     @SuppressLint("MissingPermission")
-    fun getDeviceLocation(
-        fusedLocationProviderClient: FusedLocationProviderClient
-    ) {
-        /*
-         * Get the best and most recent location of the device, which may be null in rare
-         * cases when a location is not available.
-         */
-        try {
-            val locationResult = fusedLocationProviderClient.lastLocation
-            locationResult.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    mapState.value = mapState.value.copy(
-                        lastKnownLocation = task.result)
+    @Composable
+    fun getUserCurrentLocation (context : Context) : LatLng {
+        fusedLocationProvider = LocationServices.getFusedLocationProviderClient(context)
+
+        var currentUserLocation by remember {
+            mutableStateOf(LatLng(0.0, 0.0))
+        }
+
+        DisposableEffect(key1 = fusedLocationProvider) {
+            locationCallback = object : LocationCallback() {
+                override fun onLocationResult(result: LocationResult) {
+                    for (location in result.locations) {
+                        currentUserLocation = LatLng(location.latitude, location.longitude)
+                    }
+
+                    fusedLocationProvider.lastLocation
+                        .addOnSuccessListener { location ->
+                            location?.let {
+                                val lat = location.latitude
+                                val long = location.longitude
+
+                                currentUserLocation = LatLng(lat, long)
+                            }
+                        }
+                        .addOnFailureListener {
+                            Log.e("Error getting location", "${it.message}")
+                        }
                 }
+            } //locationCallback = object : LocationCallback
+
+            if (hasPermissions(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )) {
+                locationUpdate()
+            } else {
+                askPermissions(
+                    context, PackageManager.PERMISSION_GRANTED,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
             }
-        } catch (e: SecurityException) {
-            // Show error or something
+
+            onDispose {
+                stopLocationUpdate()
+            }
+        } //DisposableEffect
+
+        return currentUserLocation
+    }
+
+    private fun hasPermissions (context : Context, vararg permissions : String) =
+        permissions.all { permission ->
+            ActivityCompat.checkSelfPermission(context, permission) ==
+                    PackageManager.PERMISSION_GRANTED
+        }
+
+    private fun askPermissions (context : Context, requestCode: Int, vararg permissions : String) {
+        ActivityCompat.requestPermissions(context as Activity, permissions, requestCode)
+    }
+
+    private fun stopLocationUpdate() {
+        try {
+            val removeTask = fusedLocationProvider.removeLocationUpdates(locationCallback)
+
+            removeTask.addOnCompleteListener { task ->
+                if (task.isSuccessful) Log.d("LOCATION_TAG", "Location callback removed.")
+                else Log.d("LOCATION_TAG", "Failed to remove location callback.")
+            }
+        }
+        catch (se : SecurityException) {
+            Log.e("LOCATION_TAG", "Fail to remove location callback... $se")
         }
     }
 
-    //TODO: List of Reports pins
+    @SuppressLint("MissingPermission")
+    private fun locationUpdate () {
+        locationCallback.let {
+            val locationRequest =
+                com.google.android.gms.location.LocationRequest.Builder(
+                    Priority.PRIORITY_HIGH_ACCURACY, 300)
+                    .setWaitForAccurateLocation(false)
+                    .setMinUpdateIntervalMillis(3000)
+                    .setMaxUpdateDelayMillis(100)
+                    .build()
 
-    private val db = FirebaseFirestore.getInstance()
+            fusedLocationProvider.requestLocationUpdates(
+                locationRequest, it, Looper.getMainLooper()
+            )
+        }
+    }
 
     fun retrieveReportsFromDB() {
         db.collection("Report")
@@ -117,9 +209,12 @@ class SharedViewModel : ViewModel() {
                                     timestamp = reportDocument["Timestamp"] as Timestamp?,
                                     images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
                                     reportType = reportDocument["Report_Hazard_Type"].toString(),
+                                    hazardStatus = reportDocument["Hazard_Status"].toString(),
                                     reportDescription = reportDocument["Report_Description"].toString(),
+                                    numberOfPersonsInvolved = reportDocument["NumberOfPersonsInvolved"].toString(),
+                                    typesOfVehicleInvolved = reportDocument["TypesOfVehicleInvolved"] as List<String>?,
                                     reportLocation = Location(
-                                        street = reportDocument["Street"].toString(),
+                                        streetOrLandmark = reportDocument["Street"].toString(),
                                         barangay = reportDocument["Barangay"].toString(),
                                         coordinates = reportDocument["Coordinates"] as GeoPoint
                                     ),
@@ -135,39 +230,55 @@ class SharedViewModel : ViewModel() {
     } //fun retrieveReportsFromDB
 
     fun retrieveFloodHazardAreasFromDB() {
-        db.collection("markers")
-            .addSnapshotListener { result, error ->
+        db.collection("markers").addSnapshotListener { result, error ->
+            floodHazardAreasListState.clear()
 
-                accidentHazardAreasListState.clear()
-                for (hazardAreaDocument in result!!.documents)
-                    accidentHazardAreasListState.add(
-                        AccidentHazardAreaData(
-                            hazardAreaID = hazardAreaDocument["uniqueID"].toString(),
-                            address = hazardAreaDocument["address"].toString(),
-                            barangay = hazardAreaDocument["barangay"].toString(),
-                            street = hazardAreaDocument["street"].toString(),
-                            coordinates = hazardAreaDocument["coordinates"] as GeoPoint,
-                        )
-                    ) //floodHazardAreasListState.add
-            } //.addOnSuccessListener
-    } //fun retrieveReportsFromDB
+            for (hazardAreaDocument in result!!.documents)
+                floodHazardAreasListState.add(
+                    FloodHazardAreaData(
+                        hazardAreaID = hazardAreaDocument["uniqueID"].toString(),
+                        address = hazardAreaDocument["address"].toString(),
+                        barangay = hazardAreaDocument["barangay"].toString(),
+                        streetOrLandmark = hazardAreaDocument["streetOrLandmark"].toString(),
+                        coordinates = hazardAreaDocument["coordinates"] as GeoPoint,
+                        riskLevel = hazardAreaDocument["risk_level"].toString()
+                    )
+                ) //floodHazardAreasListState.add
+        } //.addOnSuccessListener
+    } //fun retrieveFloodHazardAreasFromDB
 
     fun retrieveAccidentHazardAreasFromDB() {
-        db.collection("Road_Accident_Areas")
-            .addSnapshotListener { result, error ->
+        db.collection("Road_Accident_Areas").addSnapshotListener { result, error ->
+            accidentHazardAreasListState.clear()
 
-                floodHazardAreasListState.clear()
-                for (hazardAreaDocument in result!!.documents)
-                    floodHazardAreasListState.add(
-                        FloodHazardAreaData(
-                            hazardAreaID = hazardAreaDocument["uniqueID"].toString(),
-                            address = hazardAreaDocument["address"].toString(),
-                            barangay = hazardAreaDocument["barangay"].toString(),
-                            street = hazardAreaDocument["street"].toString(),
-                            coordinates = hazardAreaDocument["coordinates"] as GeoPoint,
-                            riskLevel = hazardAreaDocument["risk_level"].toString()
-                        )
-                    ) //floodHazardAreasListState.add
+            for (hazardAreaDocument in result!!.documents)
+                accidentHazardAreasListState.add(
+                    AccidentHazardAreaData(
+                        hazardAreaID = hazardAreaDocument["uniqueID"].toString(),
+                        address = hazardAreaDocument["address"].toString(),
+                        barangay = hazardAreaDocument["barangay"].toString(),
+                        streetOrLandmark = hazardAreaDocument["streetOrLandmark"].toString(),
+                        coordinates = hazardAreaDocument["coordinates"] as GeoPoint,
+                    )
+                ) //accidentHazardAreasListState
             } //.addOnSuccessListener
-    } //fun retrieveReportsFromDB
+    } //fun retrieveAccidentHazardAreasFromDB
+
+    var floodRiskLevelState = mutableStateListOf<FloodRiskLevel>()
+
+    fun retrieveFloodRiskLevel() {
+        db.collection("Flood_Risk_Level").addSnapshotListener { result, error ->
+            for (floodRiskLevel in result!!.documents) {
+                floodRiskLevelState.add(
+                    FloodRiskLevel(
+                        min = floodRiskLevel["min"] as Double,
+                        max = floodRiskLevel["max"] as Double,
+                        number = floodRiskLevel["number"] as Int
+                    )
+                )
+            }
+        }
+
+
+    }
 } //class SharedViewModel

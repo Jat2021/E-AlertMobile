@@ -1,7 +1,6 @@
 package com.example.e_alert.main_screen.reports.addReportForm
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -24,41 +23,14 @@ import kotlin.random.Random
 data class NewPost (
     var timestamp: ServerTimestamp = ServerTimestamp(),
     var description : String = "",
+    var numberOfPersonsInvolved: String? = null,
+    var typesOfVehicleInvolved : List<String>? = null,
     var photos : MutableList<Uri> = mutableListOf(),
     var hazardType : String = "",
     var barangay : String = "",
-    var street : String = "",
+    var streetOrLandmark : String = "",
     var coordinates : GeoPoint = GeoPoint(0.0, 0.0),
     var hazardStatus : String = ""
-)
-
-data class Disposition (
-    var dispatchTimestamp : ServerTimestamp? = null,
-    var dispatch : Dispatch = Dispatch()
-)
-
-data class Dispatch (
-    var police : Boolean = false,
-    var fire : Boolean = false,
-    var ambulance : Boolean = false
-)
-
-data class Involved (
-    var numberOfPerson : Int? = null,
-    var typeOfVehicles : List<String>? = null
-)
-
-data class VehicleType (
-    var car : Map<String, Boolean> = mapOf("Car" to false),
-    var jeepney : Map<String, Boolean> = mapOf("Jeepney" to false),
-    var van : Map<String, Boolean> = mapOf("Van" to false),
-    var bus : Map<String, Boolean> = mapOf("Bus" to false),
-    var tricycle : Map<String, Boolean> = mapOf("Tricycle" to false),
-    var motorcycle : Map<String, Boolean> = mapOf("Motorcycle" to false),
-    var bicycle : Map<String, Boolean> = mapOf("Bicycle" to false),
-    var truck : Map<String, Boolean> = mapOf("Truck" to false),
-    var train : Map<String, Boolean> = mapOf("Train" to false),
-    var otherType : Map<String, Boolean> = mapOf("Other Type" to false)
 )
 
 sealed class CreatePostState (var message : String? = null) {
@@ -78,6 +50,9 @@ sealed class Error (var message : String) {
 class AddReportFormViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
+    init {
+        retrieveBarangayListFromDB()
+    }
 
     private var addReportFormUIState by mutableStateOf(NewPost())
 
@@ -88,10 +63,12 @@ class AddReportFormViewModel : ViewModel() {
 
 
     lateinit var cameraPositionState : CameraPositionState
-
     
     var isScrollEnabled by mutableStateOf(true)
 
+    fun getHazardType () : String {
+        return addReportFormUIState.hazardType
+    }
 
     fun onDescriptionFieldChange(description : String) {
         addReportFormUIState = addReportFormUIState.copy(description = description)
@@ -101,27 +78,36 @@ class AddReportFormViewModel : ViewModel() {
         addReportFormUIState = addReportFormUIState.copy(hazardType = hazardType)
     }
 
-    fun onStreetFieldChange(street : String) {
-        addReportFormUIState = addReportFormUIState.copy(street = street)
+    fun onStreetOrLandmarkFieldChange(streetOrLandmark : String) {
+        addReportFormUIState = addReportFormUIState.copy(streetOrLandmark = streetOrLandmark)
     }
 
     fun onSelectBarangay(barangay : String) {
         addReportFormUIState = addReportFormUIState.copy(barangay = barangay)
     }
 
-    private fun storePhotosToStorage (reportID : String) = viewModelScope.launch {
-        val storage = FirebaseStorage.getInstance().getReference(AuthRepository().getUserId())
+    fun onSelectNumberOfPersonsInvolved(numberOfPersons : String) {
+        addReportFormUIState = addReportFormUIState.copy(numberOfPersonsInvolved = numberOfPersons)
+    }
 
+    fun onCheckTypeOfVehicle (listOfVehicleType : List<String>) {
+        addReportFormUIState = addReportFormUIState.copy(typesOfVehicleInvolved = listOfVehicleType)
+    }
+
+    private fun storePhotosToStorage (reportID : String) = viewModelScope.launch {
         selectedPhotos.forEach { uri ->
             uri.let {
-                storage.child(reportID).putFile(it)
+                val storage = FirebaseStorage.getInstance().getReference(AuthRepository().getUserId())
+                val storageRef = storage.child("$reportID/${uri.lastPathSegment}")
+
+                storageRef.putFile(it)
                     .addOnSuccessListener { task ->
                         task.metadata!!.reference!!.downloadUrl
                             .addOnSuccessListener { url ->
                                 addReportFormUIState.photos.add(url)
                             }
                     }
-            }
+            } //uri.let
         }
     } //fun storePhotosToStorage
 
@@ -143,31 +129,68 @@ class AddReportFormViewModel : ViewModel() {
         val randomNumber = Random.nextInt(90000) + 10000
         val reportID = "RE$randomNumber"
 
+        val reportReference = db.collection("Report").document(reportID)
+
         storePhotosToStorage(reportID)
 
-        db.collection("Report").document(reportID).set(
-            hashMapOf(
-                "User_ID" to AuthRepository().getUserId(),
-                "Report_ID" to reportID,
-                "Timestamp" to FieldValue.serverTimestamp(),
-                "Report_Description" to addReportFormUIState.description,
-                "Report_Images" to addReportFormUIState.photos.toList(),
-                "Report_Hazard_Type" to addReportFormUIState.hazardType,
-                "Street" to addReportFormUIState.street,
-                "Barangay" to addReportFormUIState.barangay,
-                "Coordinates" to addReportFormUIState.coordinates,
-                "Hazard_Status" to addReportFormUIState.hazardStatus
-            ) //hashMapOf
-        ) //db.collection(...).add
-            .addOnSuccessListener {
-                createPostState.value = CreatePostState.Successful
-                Log.d("createPostState@addOnSuccessListener", "${createPostState.value}") }
-            .addOnFailureListener { createPostState.value = CreatePostState.Failure }
+        when (addReportFormUIState.hazardType) {
+            "Flood" -> {
+                reportReference.set(
+                    hashMapOf(
+                        "User_ID" to AuthRepository().getUserId(),
+                        "Report_ID" to reportID,
+                        "Timestamp" to FieldValue.serverTimestamp(),
+                        "Report_Description" to addReportFormUIState.description,
+                        "Report_Images" to addReportFormUIState.photos.toList(),
+                        "Report_Hazard_Type" to addReportFormUIState.hazardType,
+                        "Street" to addReportFormUIState.streetOrLandmark,
+                        "Barangay" to addReportFormUIState.barangay,
+                        "Coordinates" to addReportFormUIState.coordinates,
+                        "Hazard_Status" to addReportFormUIState.hazardStatus
+                    ) //hashMapOf
+                ) //db.collection(...).add
+                    .addOnSuccessListener {
+                        createPostState.value = CreatePostState.Successful
+                    }
+                    .addOnFailureListener {
+                        createPostState.value = CreatePostState.Failure
+                    }
+            }
+
+            "Road Accident" -> {
+                reportReference.set(
+                    hashMapOf(
+                        "User_ID" to AuthRepository().getUserId(),
+                        "Report_ID" to reportID,
+                        "Timestamp" to FieldValue.serverTimestamp(),
+                        "Report_Description" to addReportFormUIState.description,
+                        "NumberOfPersonsInvolved" to addReportFormUIState.numberOfPersonsInvolved,
+                        "TypesOfVehicleInvolved" to addReportFormUIState.typesOfVehicleInvolved,
+                        "Report_Images" to addReportFormUIState.photos.toList(),
+                        "Report_Hazard_Type" to addReportFormUIState.hazardType,
+                        "Street" to addReportFormUIState.streetOrLandmark,
+                        "Barangay" to addReportFormUIState.barangay,
+                        "Coordinates" to addReportFormUIState.coordinates,
+                        "Hazard_Status" to addReportFormUIState.hazardStatus
+                    ) //hashMapOf
+                ) //db.collection(...).add
+                    .addOnSuccessListener {
+                        createPostState.value = CreatePostState.Successful
+                    }
+                    .addOnFailureListener {
+                        createPostState.value = CreatePostState.Failure
+                    }
+            } //"Road Accident"
+
+            else -> {
+
+            }
+        } //when statement
     }
 
     val listOfBarangayState = mutableStateListOf<String>()
 
-    fun retrieveBarangayListFromDB () {
+    private fun retrieveBarangayListFromDB () {
         db.collection("Barangay")
             .orderBy("name", Query.Direction.ASCENDING)
             .addSnapshotListener { result, error ->
@@ -183,6 +206,4 @@ class AddReportFormViewModel : ViewModel() {
         addReportFormUIState = addReportFormUIState
             .copy(coordinates = GeoPoint(coordinates.latitude,coordinates.longitude))
     }
-
-
 } //class AddReportFormViewModel

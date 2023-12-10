@@ -6,6 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,7 +33,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.MaterialTheme.typography
@@ -44,9 +45,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.e_alert.main_screen.reports.addReportForm.detailsSection.ReportStatusTag
+import com.example.e_alert.main_screen.reports.addReportForm.detailsSection.ReportTypeLabel
+import com.example.e_alert.main_screen.reports.addReportForm.detailsSection.ReportVehicleTypeTag
+import com.example.e_alert.shared_viewModel.Location
 import com.example.e_alert.shared_viewModel.ReportData
 import com.example.e_alert.shared_viewModel.User
 import com.google.firebase.Timestamp
@@ -61,16 +68,17 @@ fun Report (data : ReportData) {
             containerColor = colorScheme.surface
         )
     ) {
-        Column (Modifier.fillMaxWidth()
+        Column (
+            modifier = Modifier.fillMaxWidth()
         ) {
             Header(
                 user = data.user,
                 timePosted = data.timestamp
             )
+
             if (data.images != null) ReportPhotos(images = data.images)
 
-            Column (Modifier.padding(
-                start = 16.dp, top = 16.dp, end = 16.dp)
+            Column (Modifier.padding(16.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -78,12 +86,28 @@ fun Report (data : ReportData) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     ReportTypeLabel(data.reportType)
-                    ReportLocationLabel(
-                        reportLocation = "${data.reportLocation.street}, " +
-                                data.reportLocation.barangay)
+                    ReportStatusTag(reportStatus = data.hazardStatus)
                 }
 
+                if (data.reportType == "Road Accident") {
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    data.numberOfPersonsInvolved?.let {
+                        InvolvedPersonsAndVehicles(
+                            numberOfPersonsInvolved = it,
+                            typesOfVehicleInvolved = data.typesOfVehicleInvolved
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                } else {
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                ReportLocationLabel(reportLocation = data.reportLocation)
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 ReportDescription(text = data.reportDescription)
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -95,7 +119,6 @@ fun Report (data : ReportData) {
 
 @Composable
 fun Header (user: User, timePosted: Timestamp?) {
-    //TODO: Includes profile photo, Username (from DB)
     Row (modifier = Modifier
         .padding(16.dp, 16.dp, 8.dp, 16.dp)
         .fillMaxWidth(),
@@ -140,13 +163,12 @@ fun Header (user: User, timePosted: Timestamp?) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ReportPhotos (images : List<Uri>) {
-    //TODO: Includes photos coming from the the user (from DB)
-
     val pagerState = rememberPagerState { images.size }
 
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .size(200.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .size(200.dp)
     ) {
         HorizontalPager(
             modifier = Modifier,
@@ -186,28 +208,12 @@ fun ReportPhotos (images : List<Uri>) {
 }
 
 @Composable
-fun ReportTypeLabel (reportType : String) {
-    Surface (
-        modifier = Modifier,
-        shape = shapes.small,
-        color = colorScheme.secondaryContainer,
-    ) {
-        Text(
-            modifier = Modifier.padding(8.dp, 4.dp),
-            color = colorScheme.onSecondaryContainer,
-            style = typography.labelMedium,
-            text = reportType.uppercase(),
-        )
-    }
-}
-
-@Composable
-fun ReportLocationLabel (reportLocation : String) {
-    Row (verticalAlignment = Alignment.CenterVertically) {
+fun ReportLocationLabel (reportLocation : Location) {
+    Row (verticalAlignment = Alignment.Top) {
         Icon(
             imageVector = Icons.Rounded.LocationOn,
             modifier = Modifier.size(18.dp),
-            tint = MaterialTheme.colorScheme.secondary,
+            tint = colorScheme.secondary,
             contentDescription = null
         )
 
@@ -216,9 +222,36 @@ fun ReportLocationLabel (reportLocation : String) {
         Text(
             color = colorScheme.onSurfaceVariant,
             style = typography.labelMedium,
-            text = reportLocation
+            overflow = TextOverflow.Ellipsis,
+            softWrap = true,
+            maxLines = 2,
+            text = "${reportLocation.barangay} · ${reportLocation.streetOrLandmark}"
         )
     }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun InvolvedPersonsAndVehicles(
+    numberOfPersonsInvolved: String,
+    typesOfVehicleInvolved: List<String>?
+) {
+    Column (modifier = Modifier.fillMaxWidth()) {
+        Text(
+            style = typography.bodySmall,
+            fontStyle = FontStyle.Italic,
+            text = numberOfPersonsInvolved
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        FlowRow {
+            typesOfVehicleInvolved?.forEach { vehicleType ->
+                ReportVehicleTypeTag(vehicleType = vehicleType)
+                Spacer(modifier = Modifier.width(8.dp))
+            } //forEach
+        } //FlowRow
+    } //Column
 }
 
 @Composable
@@ -246,7 +279,7 @@ fun LikesAndDislikesLabel (likes : Int, dislikes : Int) {
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 color = colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.labelMedium,
+                style = typography.labelMedium,
                 text = likes.toString()
             )
         }
@@ -319,7 +352,7 @@ fun LikesAndDislikes (numberOfLikes : Int, numberOfDislikes : Int) {
                 onClick = { /*TODO*/ }
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.ThumbUp,
+                    imageVector = Icons.Rounded.ThumbDown,
                     contentDescription = null,
                     tint = colorScheme.onSurface,
                     modifier = Modifier.size(18.dp)

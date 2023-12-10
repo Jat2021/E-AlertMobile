@@ -30,7 +30,7 @@ import com.example.e_alert.shared_viewModel.SharedViewModel
 @Composable
 fun ReportsPage (sharedViewModel : SharedViewModel, navController : NavHostController) {
     Scaffold (
-        containerColor = colorScheme.surfaceColorAtElevation(8.dp),
+        containerColor = colorScheme.surfaceColorAtElevation(16.dp),
         floatingActionButton = { AddReportFAB(navController) },
         floatingActionButtonPosition = FabPosition.End
     ) { paddingValues ->

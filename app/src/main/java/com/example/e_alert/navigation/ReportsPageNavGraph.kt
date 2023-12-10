@@ -7,9 +7,9 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.example.e_alert.main_screen.reports.ReportsPage
 import com.example.e_alert.main_screen.reports.addReportForm.AddReportForm
 import com.example.e_alert.main_screen.reports.addReportForm.AddReportFormViewModel
-import com.example.e_alert.main_screen.reports.ReportsPage
 import com.example.e_alert.shared_viewModel.SharedViewModel
 
 sealed class ReportsPageScreen (var route : String) {
@@ -28,7 +28,8 @@ fun NavGraphBuilder.reportsPageNavGraph (
             ReportsPage(sharedViewModel = sharedViewModel, navController = navController)
         }
         composable(route = ReportsPageScreen.AddReport.route) {
-            AddReportForm(addReportFormViewModel = AddReportFormViewModel(), navController = navController)
+            val sharedViewModel : SharedViewModel = viewModel(LocalContext.current as ComponentActivity)
+            AddReportForm(addReportFormViewModel = AddReportFormViewModel(), sharedViewModel, navController = navController)
         }
     }
 }

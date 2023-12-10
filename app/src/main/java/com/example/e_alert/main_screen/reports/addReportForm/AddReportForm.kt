@@ -7,12 +7,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -20,24 +21,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.e_alert.main_screen.reports.addReportForm.composableFunctions.DetailsSection
-import com.example.e_alert.main_screen.reports.addReportForm.composableFunctions.LocationSection
-import com.example.e_alert.main_screen.reports.addReportForm.composableFunctions.ReportTypeSection
+import com.example.e_alert.main_screen.reports.addReportForm.detailsSection.DetailsSection
+import com.example.e_alert.main_screen.reports.addReportForm.locationSection.LocationSection
 import com.example.e_alert.navigation.MainScreen
 import com.example.e_alert.navigation.Navigation
+import com.example.e_alert.shared_viewModel.SharedViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.rememberCameraPositionState
 
 @SuppressLint("RememberReturnType")
 @Composable
 fun AddReportForm(
-    addReportFormViewModel: AddReportFormViewModel? = null,
+    addReportFormViewModel: AddReportFormViewModel,
+    sharedViewModel: SharedViewModel,
     navController : NavHostController
 ) {
-    addReportFormViewModel!!.retrieveBarangayListFromDB()
     val pinnedLocation = addReportFormViewModel.pinnedLocationState
 
     addReportFormViewModel.cameraPositionState = rememberCameraPositionState {
@@ -45,7 +47,7 @@ fun AddReportForm(
     }
 
     LaunchedEffect(addReportFormViewModel.cameraPositionState.isMoving) {
-        if(!addReportFormViewModel.cameraPositionState.isMoving)
+        if(addReportFormViewModel.cameraPositionState.isMoving)
             addReportFormViewModel.isScrollEnabled = true
     }
 
@@ -57,22 +59,22 @@ fun AddReportForm(
     ) {
         DetailsSection(addReportFormViewModel)
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        ReportTypeSection(addReportFormViewModel)
+        Divider(thickness = 1.dp)
 
-        Divider(
-            thickness = 2.dp,
-            modifier = Modifier.padding(vertical = 16.dp)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LocationSection(
+            addReportFormViewModel,
+            sharedViewModel.getUserCurrentLocation(context = LocalContext.current)
         )
-
-        LocationSection(addReportFormViewModel)
 
         Spacer(modifier = Modifier.height(24.dp))
 
         OutlinedButton(
-            modifier =Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.small,
+            modifier = Modifier.fillMaxWidth(),
+            shape = shapes.small,
             onClick = { /*TODO*/ }
         ) { Text(text = "Cancel") }
 
@@ -104,7 +106,11 @@ fun AddReportForm(
             } //onClick
         ) {
             if (addReportFormViewModel.createPostState.value == CreatePostState.Loading)
-                CircularProgressIndicator()
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = colorScheme.onPrimary,
+                    strokeCap = StrokeCap.Round
+                )
             else
                 Text(text = "Submit")
         } //Button
