@@ -18,6 +18,7 @@ sealed class MainScreen (var route : String) {
     object HomePage : MainScreen(route = "Home")
     object ReportsPage : MainScreen(route = "Reports")
     object RoutesPage : MainScreen(route = "Routes")
+    object ProfilePage : MainScreen(route = "Profile")
 }
 
 @Composable
@@ -35,12 +36,25 @@ fun MainScreenNavGraph(navController : NavHostController) {
         composable(route = MainScreen.HomePage.route) {
             HomePage(
                 sharedViewModel = sharedViewModel,
-                weatherViewModel = weatherViewModel
+                weatherViewModel = weatherViewModel,
+                onNavigateToSignInPage = {
+                    navController.navigate(AuthScreen.Login.route){
+                        launchSingleTop = true
+                        popUpTo(route = MainScreen.HomePage.route){
+                            inclusive = true
+                        }
+                    }
+                }
             )
         }
         reportsPageNavGraph(navController = navController)
         composable(route = MainScreen.RoutesPage.route) {
-            RoutesPage()
+            RoutesPage(
+                sharedViewModel = sharedViewModel,
+                weatherViewModel = weatherViewModel)
+        }
+        composable(route = MainScreen.ProfilePage.route) {
+            //ProfilePage(navController = navController)
         }
     }
 }
