@@ -1,22 +1,23 @@
 package com.example.e_alert.main_screen.reports.addReportForm
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.e_alert.repository.AuthRepository
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ServerTimestamp
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import com.google.maps.android.compose.CameraPositionState
-import kotlinx.coroutines.launch
 import kotlin.Error
 import kotlin.random.Random
 
@@ -30,7 +31,7 @@ data class NewPost (
     var barangay : String = "",
     var streetOrLandmark : String = "",
     var coordinates : GeoPoint = GeoPoint(0.0, 0.0),
-    var hazardStatus : String = ""
+    var hazardStatus : String = "Ongoing"
 )
 
 sealed class CreatePostState (var message : String? = null) {
@@ -94,21 +95,46 @@ class AddReportFormViewModel : ViewModel() {
         addReportFormUIState = addReportFormUIState.copy(typesOfVehicleInvolved = listOfVehicleType)
     }
 
-    private fun storePhotosToStorage (reportID : String) = viewModelScope.launch {
+    private fun savePhotosToDB (reportID : String, uri : Uri) {
+        val reportImageReference = db.collection("Report_Image").document()
+        val urlOfPhotoToSave = hashMapOf(
+            "Report_ID" to reportID,
+            "Url_from_storage" to uri
+        )
+
+        reportImageReference.set(urlOfPhotoToSave)
+    }
+
+    private fun storePhotosToStorage (reportID : String) {
+        var storage: StorageReference
+        var storageRef: StorageReference
+
         selectedPhotos.forEach { uri ->
             uri.let {
-                val storage = FirebaseStorage.getInstance().getReference(AuthRepository().getUserId())
-                val storageRef = storage.child("$reportID/${uri.lastPathSegment}")
+                storage = FirebaseStorage.getInstance().getReference(AuthRepository().getUserId())
+                storageRef = storage.child("$reportID/${uri.lastPathSegment}")
 
                 storageRef.putFile(it)
                     .addOnSuccessListener { task ->
                         task.metadata!!.reference!!.downloadUrl
                             .addOnSuccessListener { url ->
-                                addReportFormUIState.photos.add(url)
+                                savePhotosToDB(reportID, url)
+                            }
+                            .addOnFailureListener {
+                                Log.e(
+                                    "PHOTOS TO STORAGE FAILED",
+                                    "Failed to retrieve photo from Firebase Storage"
+                                )
                             }
                     }
+                    .addOnFailureListener {
+                        Log.e(
+                            "PHOTOS TO STORAGE FAILED",
+                            "Failed to upload photo to Firebase Storage"
+                        )
+                    }
             } //uri.let
-        }
+        } //selectedPhotos.forEach
     } //fun storePhotosToStorage
 
     private var selectedPhotos = mutableStateListOf<Uri>()
@@ -129,12 +155,14 @@ class AddReportFormViewModel : ViewModel() {
         val randomNumber = Random.nextInt(90000) + 10000
         val reportID = "RE$randomNumber"
 
-        val reportReference = db.collection("Report").document(reportID)
+        val reportReference : DocumentReference
 
         storePhotosToStorage(reportID)
 
         when (addReportFormUIState.hazardType) {
             "Flood" -> {
+                reportReference = db.collection("Report").document(reportID)
+
                 reportReference.set(
                     hashMapOf(
                         "User_ID" to AuthRepository().getUserId(),
@@ -143,7 +171,7 @@ class AddReportFormViewModel : ViewModel() {
                         "Report_Description" to addReportFormUIState.description,
                         "Report_Images" to addReportFormUIState.photos.toList(),
                         "Report_Hazard_Type" to addReportFormUIState.hazardType,
-                        "Street" to addReportFormUIState.streetOrLandmark,
+                        "street_landmark" to addReportFormUIState.streetOrLandmark,
                         "Barangay" to addReportFormUIState.barangay,
                         "Coordinates" to addReportFormUIState.coordinates,
                         "Hazard_Status" to addReportFormUIState.hazardStatus
@@ -158,6 +186,8 @@ class AddReportFormViewModel : ViewModel() {
             }
 
             "Road Accident" -> {
+                reportReference = db.collection("Report").document(reportID)
+
                 reportReference.set(
                     hashMapOf(
                         "User_ID" to AuthRepository().getUserId(),
@@ -168,7 +198,7 @@ class AddReportFormViewModel : ViewModel() {
                         "TypesOfVehicleInvolved" to addReportFormUIState.typesOfVehicleInvolved,
                         "Report_Images" to addReportFormUIState.photos.toList(),
                         "Report_Hazard_Type" to addReportFormUIState.hazardType,
-                        "Street" to addReportFormUIState.streetOrLandmark,
+                        "street_landmark" to addReportFormUIState.streetOrLandmark,
                         "Barangay" to addReportFormUIState.barangay,
                         "Coordinates" to addReportFormUIState.coordinates,
                         "Hazard_Status" to addReportFormUIState.hazardStatus

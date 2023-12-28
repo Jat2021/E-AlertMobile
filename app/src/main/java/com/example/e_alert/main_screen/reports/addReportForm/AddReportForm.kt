@@ -75,7 +75,7 @@ fun AddReportForm(
         OutlinedButton(
             modifier = Modifier.fillMaxWidth(),
             shape = shapes.small,
-            onClick = { /*TODO*/ }
+            onClick = { navController.navigate(MainScreen.ReportsPage.route) }
         ) { Text(text = "Cancel") }
 
         val context = LocalContext.current

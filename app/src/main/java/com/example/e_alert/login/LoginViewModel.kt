@@ -2,6 +2,7 @@ package com.example.e_alert.login
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -10,8 +11,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.e_alert.repository.AuthRepository
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import kotlinx.coroutines.launch
 
 data class LoginUiState(
@@ -26,11 +31,12 @@ data class LoginUiState(
     val firstName : String = "",
     val lastName : String = "",
     val street : String = "",
-    val baranggay : String = "",
+    val barangay : String = "",
     val phoneNumber : String = "",
 
     val isLoading : Boolean = false,
     val isSuccessLogin : Boolean = false,
+    var isAuthorizedLogin : Boolean = false,
 
     val signUpError : String? = null,
     val loginError : String? = null,
@@ -43,7 +49,7 @@ data class LoginUiState(
 class LoginViewModel(
     private val repository : AuthRepository = AuthRepository()
 ) : ViewModel() {
-    val db = FirebaseFirestore.getInstance()
+    private val db = FirebaseFirestore.getInstance()
 
     val hasUser : Boolean get() = repository.hasUser()
 
@@ -82,8 +88,8 @@ class LoginViewModel(
         loginUiState = loginUiState.copy(street = street)
     }
 
-    fun onBaranggayChange (baranggay: String) {
-        loginUiState = loginUiState.copy(baranggay = baranggay)
+    fun onBarangayChange (barangay: String) {
+        loginUiState = loginUiState.copy(barangay = barangay)
     }
 
     fun onPhoneNumberChange (phoneNumber: String) {
@@ -101,18 +107,64 @@ class LoginViewModel(
                 loginUiState.confirmPasswordSignUp.isNotBlank()
     }
 
+    private fun storePhotosToStorage (userID : String) {
+        var storage: StorageReference
+        var storageRef: StorageReference
+
+        selectedPhotos.forEach { uri ->
+            uri.let {
+                storage = FirebaseStorage.getInstance().getReference(userID)
+                storageRef = storage.child("Uploaded_ID/${uri.lastPathSegment}")
+
+                storageRef.putFile(it)
+                    .addOnSuccessListener { task ->
+                        task.metadata!!.reference!!.downloadUrl
+                            .addOnSuccessListener { url ->
+                                savePhotosToDB(userID, url)
+                            }
+                            .addOnFailureListener {
+                                Log.e(
+                                    "PHOTOS TO STORAGE FAILED",
+                                    "Failed to retrieve photo from Firebase Storage"
+                                )
+                            }
+                    }
+                    .addOnFailureListener {
+                        Log.e(
+                            "PHOTOS TO STORAGE FAILED",
+                            "Failed to upload photo to Firebase Storage"
+                        )
+                    }
+            } //uri.let
+        } //selectedPhotos.forEach
+    } //fun storePhotosToStorage
+
+    private fun savePhotosToDB (userID : String, uri : Uri) {
+        val reportImageReference = db.collection("UploadedID").document()
+        val urlOfPhotoToSave = hashMapOf(
+            "User_ID" to userID,
+            "Url_from_storage" to uri
+        )
+
+        reportImageReference.set(urlOfPhotoToSave)
+    }
+
     private fun createUserDocumentInDB () {
         db.collection("User")
             .document(repository.getUserId()).set(
                 hashMapOf(
                     "User_Type" to "PUBLIC",
+                    "Email" to (Firebase.auth.currentUser?.email ?: ""),
                     "First_Name" to loginUiState.firstName,
                     "Last_Name" to loginUiState.lastName,
                     "Street" to loginUiState.street,
-                    "Baranggay" to loginUiState.baranggay,
+                    "Barangay" to loginUiState.barangay,
                     "Phone_Number" to loginUiState.phoneNumber,
                 )
             )
+            .addOnSuccessListener {
+                storePhotosToStorage(repository.getUserId())
+            }
     } //createUserDocumentInDB
 
     val listOfBarangayState = mutableStateListOf<String>()
@@ -129,6 +181,20 @@ class LoginViewModel(
                     )
             } //.addOnSuccessListener
     } //fun retrieveReportsFromDB
+
+    private var selectedPhotos = mutableStateListOf<Uri>()
+
+    fun addPhotosToList (listOfUris : List<Uri>) {
+        selectedPhotos.addAll(listOfUris)
+    }
+
+    fun removePhotoFromTheList (uri : Uri) {
+        selectedPhotos.remove(uri)
+    }
+
+    fun getSelectedPhotos () : List<Uri> {
+        return selectedPhotos
+    }
 
     fun createUser(context: Context) = viewModelScope.launch {
         try {
@@ -179,7 +245,7 @@ class LoginViewModel(
     fun loginUser(context: Context) = viewModelScope.launch {
         try {
             if (!validateLoginForm()){
-                throw IllegalArgumentException("Email and Password cannot be empty")
+                throw IllegalArgumentException("Email and password cannot be empty.")
             }
 
             loginUiState = loginUiState.copy(isLoading = true)
@@ -189,7 +255,7 @@ class LoginViewModel(
                 loginUiState.email,
                 loginUiState.password
             ) { isSuccessful ->
-                loginUiState = if (isSuccessful){
+                loginUiState = if (isSuccessful) {
                     Toast.makeText(
                         context,
                         "success login",
@@ -213,4 +279,19 @@ class LoginViewModel(
             loginUiState = loginUiState.copy(isLoading = false)
         }
     } //loginUser
+
+    private var userType : String = ""
+    private var isAuthorized = mutableStateOf(false)
+
+    fun isAuthorizedAccount (currentUser : String) : Boolean {
+        db.collection("User").document(currentUser).get()
+            .addOnSuccessListener {
+                Log.d("LOGIN", "${Firebase.auth.currentUser?.uid}")
+                userType = it["User_Type"].toString()
+                isAuthorized.value = userType == currentUser
+                Log.d("LOGIN", "isAuthorized: $isAuthorized")
+            }
+        Log.d("LOGIN", "isAuthorized: $isAuthorized")
+        return isAuthorized.value
+    }
 }

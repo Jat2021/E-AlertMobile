@@ -21,40 +21,42 @@ fun NavGraphBuilder.authNavGraph (
         startDestination = AuthScreen.Login.route,
         route = Navigation.AUTH_SCREEN
     ) {
-        composable(route = AuthScreen.Login.route){
-            LoginScreen(onNavToHomePage = {
-                navController.navigate(MainScreen.HomePage.route){
-                    launchSingleTop = true
-                    popUpTo(route = AuthScreen.Login.route){
-                        inclusive = true
+        composable(route = AuthScreen.Login.route) {
+            LoginScreen(
+                loginViewModel = loginViewModel,
+                onNavToHomePage = {
+                    navController.navigate(MainScreen.HomePage.route) {
+                        launchSingleTop = true
+                        popUpTo(route = AuthScreen.Login.route) {
+                            inclusive = true
+                        }
                     }
-                }
-            },
-                loginViewModel = loginViewModel
-
-            ) {
-                navController.navigate(AuthScreen.SignUp.route){
-                    launchSingleTop = true
-                    popUpTo(AuthScreen.Login.route){
-                        inclusive = true
+                },
+                onNavToSignUpPage = {
+                    navController.navigate(AuthScreen.SignUp.route) {
+                        launchSingleTop = true
+//                        popUpTo(AuthScreen.Login.route){
+//                            inclusive = true
+//                        }
                     }
-                }
-            }
-        }
+                } //onNavToSignUpPage
+            ) //LoginScreen
+        } //composable
 
         composable(route = AuthScreen.SignUp.route){
-            SignUpScreen(onNavToHomePage = {
-                navController.navigate(MainScreen.HomePage.route){
-                    popUpTo(AuthScreen.SignUp.route){
-                        inclusive = true
+            SignUpScreen(
+                loginViewModel = loginViewModel,
+                onNavToHomePage = {
+                    navController.navigate(MainScreen.HomePage.route){
+                        popUpTo(AuthScreen.SignUp.route){
+                            inclusive = true
+                        }
                     }
+                },
+                onNavToLoginPage = {
+                    navController.navigate(AuthScreen.Login.route)
                 }
-            },
-                loginViewModel = loginViewModel
-
-            ) {
-                navController.navigate(AuthScreen.Login.route)
-            }
+            )
         }
     } //navigation
 } //NavGraphBuilder.authNavGraph

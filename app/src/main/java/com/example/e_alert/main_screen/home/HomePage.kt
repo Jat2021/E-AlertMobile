@@ -2,6 +2,7 @@ package com.example.e_alert.main_screen.home
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavHostController
 import com.example.e_alert.main_screen.home.homePageBottomSheet.HomePageBottomSheet
 import com.example.e_alert.main_screen.home.homePageMap.HomePageMap
 import com.example.e_alert.shared_viewModel.SharedViewModel
@@ -9,8 +10,9 @@ import com.example.e_alert.weather.WeatherViewModel
 
 @Composable
 fun HomePage (
-    sharedViewModel : SharedViewModel,
-    weatherViewModel : WeatherViewModel
+    sharedViewModel: SharedViewModel,
+    weatherViewModel: WeatherViewModel,
+    navController: NavHostController
 ) {
     sharedViewModel.retrieveReportsFromDB()
     sharedViewModel.retrieveFloodHazardAreasFromDB()

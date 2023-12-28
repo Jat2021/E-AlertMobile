@@ -21,7 +21,8 @@ fun AddReportTopBar (navController : NavHostController) {
             (titleContentColor = MaterialTheme.colorScheme.primary),
         title = { Text(text = "Add Report") },
         actions = {
-            IconButton(onClick = { navController.navigate(MainScreen.ReportsPage.route) }) {
+            IconButton(
+                onClick = { navController.navigate(MainScreen.ReportsPage.route) }) {
                 Icon(
                     imageVector = Icons.Rounded.Close,
                     contentDescription = "Close"

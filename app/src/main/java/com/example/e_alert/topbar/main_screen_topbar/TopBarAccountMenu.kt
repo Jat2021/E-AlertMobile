@@ -12,17 +12,18 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.navigation.NavController
+import com.example.e_alert.navigation.MainScreen
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun TopBarAccountMenu () {
+fun TopBarAccountMenu (navController: NavController) {
     var expanded by remember { mutableStateOf(false) }
 
     Box {
@@ -36,13 +37,14 @@ fun TopBarAccountMenu () {
                 contentDescription = "Profile"
             )
         } //IconButton
+
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
             DropdownMenuItem(
                 text = { Text(text = "Profile") },
-                onClick = { /*TODO*/ }
+                onClick = { navController.navigate(MainScreen.ProfilePage.route) }
             )
             DropdownMenuItem(
                 leadingIcon = {

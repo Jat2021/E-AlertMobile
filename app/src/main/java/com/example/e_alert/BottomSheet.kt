@@ -24,8 +24,8 @@ fun BottomSheet (content: @Composable() (() -> Unit)) {
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetSwipeEnabled = true,
-        sheetPeekHeight = Dp(64f),
-        sheetShadowElevation = Dp(8f),
+        sheetPeekHeight = Dp(32f),
+        sheetShadowElevation = Dp(16f),
         sheetShape = MaterialTheme.shapes.small,
         sheetContent = { content.invoke() },
     ) { }

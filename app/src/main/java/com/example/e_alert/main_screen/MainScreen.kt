@@ -11,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.e_alert.BottomNavBar
+import com.example.e_alert.navigation.MainScreen
 import com.example.e_alert.navigation.MainScreenNavGraph
 import com.example.e_alert.navigation.ReportsPageScreen
 import com.example.e_alert.topbar.add_report_topbar.AddReportTopBar
@@ -39,6 +40,9 @@ fun TopBar (navController: NavHostController) {
 
     when (currentDestination?.route) {
         ReportsPageScreen.AddReport.route -> AddReportTopBar(navController = navController)
-        else -> MainScreenTopBar()
+        MainScreen.HomePage.route -> MainScreenTopBar(navController)
+        MainScreen.ReportsPage.route -> MainScreenTopBar(navController)
+        MainScreen.RoutesPage.route -> MainScreenTopBar(navController)
+        else -> { }
     }
 }

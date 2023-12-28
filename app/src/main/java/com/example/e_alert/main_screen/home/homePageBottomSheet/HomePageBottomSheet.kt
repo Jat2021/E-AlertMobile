@@ -26,7 +26,7 @@ fun HomePageBottomSheet(
                 .verticalScroll(rememberScrollState())
         ) {
             Column (
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 8.dp)
             ) {
                 WeatherForecast(weatherViewModel)
 
@@ -44,7 +44,11 @@ fun HomePageBottomSheet(
             Column (
                 modifier = Modifier.padding(horizontal = 16.dp)
             ) {
+                RoadAccidentReports(sharedViewModel)
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                FloodReports(sharedViewModel)
             }
         } //Column
     } //BottomSheet

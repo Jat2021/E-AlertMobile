@@ -1,15 +1,22 @@
 package com.example.e_alert.main_screen.routes
 
-import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.e_alert.shared_viewModel.SharedViewModel
+import com.example.e_alert.weather.WeatherViewModel
 
 @Composable
-fun RoutesPage (modifier: Modifier = Modifier) {
-    val sharedViewModel : SharedViewModel = viewModel(LocalContext.current as ComponentActivity)
-
+fun RoutesPage (
+    sharedViewModel: SharedViewModel,
+    weatherViewModel: WeatherViewModel,
+    navController: NavHostController
+) {
+    RoutesPageMap(
+        weatherViewModel = weatherViewModel,
+        listOfFloodHazardAreas = sharedViewModel.floodHazardAreasListState,
+        listOfAccidentHazardAreas = sharedViewModel.accidentHazardAreasListState,
+        listOfReports = sharedViewModel.reportsListState,
+        getLocationUpdates = sharedViewModel.getUserCurrentLocation(context = LocalContext.current)
+    )
 }

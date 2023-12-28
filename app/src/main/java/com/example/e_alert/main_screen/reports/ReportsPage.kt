@@ -29,6 +29,8 @@ import com.example.e_alert.shared_viewModel.SharedViewModel
 
 @Composable
 fun ReportsPage (sharedViewModel : SharedViewModel, navController : NavHostController) {
+    sharedViewModel.retrievePhotosFromDB()
+
     Scaffold (
         containerColor = colorScheme.surfaceColorAtElevation(16.dp),
         floatingActionButton = { AddReportFAB(navController) },
@@ -60,7 +62,7 @@ fun ReportsPage (sharedViewModel : SharedViewModel, navController : NavHostContr
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 items(items = sharedViewModel.reportsListState) { reportData ->
-                    Report(data = reportData)
+                    Report(data = reportData, sharedViewModel = sharedViewModel)
                 } //items
             } //LazyColumn
         } //else

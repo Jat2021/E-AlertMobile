@@ -32,13 +32,13 @@ data class ReportData(
     val user : User = User(
         firstName = "",
         lastName = "",
-        profilePhoto = null
+        userID = ""
     ),
     val reportID: String = "",
     val timestamp: Timestamp?,
     val images : List<Uri>? = null,
     val reportType : String = "",
-    val hazardStatus : String = "",
+    val hazardStatus : String = "Ongoing",
     val numberOfPersonsInvolved : String? = null,
     val typesOfVehicleInvolved : List<String>? = null,
     val reportLocation : Location = Location(
@@ -54,7 +54,7 @@ data class ReportData(
 data class User(
     val firstName : String,
     val lastName : String,
-    val profilePhoto : Uri?
+    val userID : String
 )
 
 data class Location(
@@ -84,6 +84,11 @@ data class FloodRiskLevel (
     val min : Double = 0.0,
     val max : Double = 0.0,
     val number : Int
+)
+
+data class ReportImage (
+    val reportID : String,
+    val url : Uri
 )
 
 class SharedViewModel : ViewModel() {
@@ -191,8 +196,27 @@ class SharedViewModel : ViewModel() {
         }
     }
 
+//    private fun retrievePhotosFromDB(reportID : String) : List<Uri>? {
+//        val reportImageReference = db.collection("Report_Image")
+//        val images : MutableList<Uri>? = null
+//
+//        reportImageReference.where(Filter.equalTo("Report_ID",reportID))
+//            .addSnapshotListener { result, error ->
+//                for (photo in result!!.documents) {
+//                    if (result.documents.isNotEmpty())
+//                        images?.add(photo["Url_from_storage"] as Uri)
+//                    Log.d("DISPLAY IMAGE", "data.images[index]: ${photo["Url_from_storage"]}")
+//                }
+//            }
+//        return images
+//    }
+
     fun retrieveReportsFromDB() {
+        val reportImageReference = db.collection("Report_Image")
+        val images : MutableList<Uri>? = null
+
         db.collection("Report")
+            .whereLessThanOrEqualTo("Timestamp", Timestamp.now())
             .orderBy("Timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { report, error ->
                 for (reportDocument in report!!.documents) {
@@ -203,18 +227,18 @@ class SharedViewModel : ViewModel() {
                                     user = User(
                                         firstName = user!!["First_Name"].toString(),
                                         lastName = user["Last_Name"].toString(),
-                                        profilePhoto = null
+                                        userID = reportDocument["User_ID"].toString()
                                     ),
                                     reportID = reportDocument["Report_ID"].toString(),
                                     timestamp = reportDocument["Timestamp"] as Timestamp?,
-                                    images = /*reportDocument["Report_Images"] as List<Uri>*/ null,
+                                    images = images,
                                     reportType = reportDocument["Report_Hazard_Type"].toString(),
                                     hazardStatus = reportDocument["Hazard_Status"].toString(),
                                     reportDescription = reportDocument["Report_Description"].toString(),
                                     numberOfPersonsInvolved = reportDocument["NumberOfPersonsInvolved"].toString(),
                                     typesOfVehicleInvolved = reportDocument["TypesOfVehicleInvolved"] as List<String>?,
                                     reportLocation = Location(
-                                        streetOrLandmark = reportDocument["Street"].toString(),
+                                        streetOrLandmark = reportDocument["street_landmark"].toString(),
                                         barangay = reportDocument["Barangay"].toString(),
                                         coordinates = reportDocument["Coordinates"] as GeoPoint
                                     ),
@@ -223,6 +247,8 @@ class SharedViewModel : ViewModel() {
                                     //hazardStatus = false
                                 )
                             ) //reportsListState.add
+
+
                         }
                 }
                 reportsListState.clear()
@@ -230,7 +256,7 @@ class SharedViewModel : ViewModel() {
     } //fun retrieveReportsFromDB
 
     fun retrieveFloodHazardAreasFromDB() {
-        db.collection("markers").addSnapshotListener { result, error ->
+        db.collection("Flood_Hazard_Area").addSnapshotListener { result, error ->
             floodHazardAreasListState.clear()
 
             for (hazardAreaDocument in result!!.documents)
@@ -239,7 +265,7 @@ class SharedViewModel : ViewModel() {
                         hazardAreaID = hazardAreaDocument["uniqueID"].toString(),
                         address = hazardAreaDocument["address"].toString(),
                         barangay = hazardAreaDocument["barangay"].toString(),
-                        streetOrLandmark = hazardAreaDocument["streetOrLandmark"].toString(),
+                        streetOrLandmark = hazardAreaDocument["street_landmark"].toString(),
                         coordinates = hazardAreaDocument["coordinates"] as GeoPoint,
                         riskLevel = hazardAreaDocument["risk_level"].toString()
                     )
@@ -257,7 +283,7 @@ class SharedViewModel : ViewModel() {
                         hazardAreaID = hazardAreaDocument["uniqueID"].toString(),
                         address = hazardAreaDocument["address"].toString(),
                         barangay = hazardAreaDocument["barangay"].toString(),
-                        streetOrLandmark = hazardAreaDocument["streetOrLandmark"].toString(),
+                        streetOrLandmark = hazardAreaDocument["street_landmark"].toString(),
                         coordinates = hazardAreaDocument["coordinates"] as GeoPoint,
                     )
                 ) //accidentHazardAreasListState
@@ -278,7 +304,30 @@ class SharedViewModel : ViewModel() {
                 )
             }
         }
+    }
 
+    var isDeleting = mutableStateOf(false)
 
+    fun deleteReport (reportID : String) {
+        isDeleting.value = true
+
+        db.collection("Report").document(reportID).delete()
+            .addOnSuccessListener { isDeleting.value = false }
+    }
+
+    var photosFromDB = mutableStateListOf<ReportImage>()
+
+    fun retrievePhotosFromDB () {
+        val reportImagesReference = db.collection("Report_Images")
+        val reportReference = db.collection("Report")
+
+        reportImagesReference.get().addOnSuccessListener {
+            for (uri in it.documents) {
+                photosFromDB.add(ReportImage(
+                    uri["Report_ID"].toString(),
+                    uri["Url_from_storage"] as Uri)
+                )
+            }
+        }
     }
 } //class SharedViewModel

@@ -1,6 +1,5 @@
 package com.example.e_alert.main_screen.reports.addReportForm.locationSection
 
-import android.content.Context
 import android.location.Geocoder
 import android.os.Build
 import android.util.Log
@@ -32,6 +31,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.e_alert.main_screen.reports.addReportForm.AddReportFormViewModel
 import com.google.android.gms.maps.model.LatLng
@@ -92,7 +92,7 @@ fun LocationOnMap (addReportFormViewModel: AddReportFormViewModel, currentLocati
             
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Icon(
-                    modifier = Modifier.size(18.dp),
+                    modifier = Modifier.size(8.dp),
                     imageVector = Icons.Rounded.Circle,
                     tint = MaterialTheme.colorScheme.primary,
                     contentDescription = null
@@ -101,8 +101,9 @@ fun LocationOnMap (addReportFormViewModel: AddReportFormViewModel, currentLocati
         } //Box
 
         @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-        fun Context.getAddressFromCoordinates(lat : Double, long : Double) : String {
-            val geocoder = Geocoder(this, Locale.getDefault())
+        @Composable
+        fun getAddressFromCoordinates(lat : Double, long : Double) : String {
+            val geocoder = Geocoder(LocalContext.current, Locale.getDefault())
             var address : String = ""
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

@@ -11,6 +11,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.e_alert.main_screen.home.HomePage
 import com.example.e_alert.main_screen.routes.RoutesPage
+import com.example.e_alert.main_screen.profile.ProfilePage
+import com.example.e_alert.main_screen.profile.ProfilePageViewModel
 import com.example.e_alert.shared_viewModel.SharedViewModel
 import com.example.e_alert.weather.WeatherViewModel
 
@@ -21,10 +23,12 @@ sealed class MainScreen (var route : String) {
     object ProfilePage : MainScreen(route = "Profile")
 }
 
+
 @Composable
 fun MainScreenNavGraph(navController : NavHostController) {
     val sharedViewModel : SharedViewModel = viewModel(LocalContext.current as ComponentActivity)
     val weatherViewModel : WeatherViewModel = viewModel(LocalContext.current as ComponentActivity)
+    val profilePageViewModel : ProfilePageViewModel = viewModel(LocalContext.current as ComponentActivity)
 
     NavHost(
         navController = navController,
@@ -35,26 +39,23 @@ fun MainScreenNavGraph(navController : NavHostController) {
     ) {
         composable(route = MainScreen.HomePage.route) {
             HomePage(
+                navController = navController,
                 sharedViewModel = sharedViewModel,
-                weatherViewModel = weatherViewModel,
-                onNavigateToSignInPage = {
-                    navController.navigate(AuthScreen.Login.route){
-                        launchSingleTop = true
-                        popUpTo(route = MainScreen.HomePage.route){
-                            inclusive = true
-                        }
-                    }
-                }
+                weatherViewModel = weatherViewModel
             )
         }
         reportsPageNavGraph(navController = navController)
         composable(route = MainScreen.RoutesPage.route) {
             RoutesPage(
+                navController = navController,
                 sharedViewModel = sharedViewModel,
                 weatherViewModel = weatherViewModel)
         }
         composable(route = MainScreen.ProfilePage.route) {
-            //ProfilePage(navController = navController)
+            ProfilePage(
+                profilePageViewModel = profilePageViewModel,
+                onNavigateBackToMain = { navController.popBackStack() }
+            )
         }
     }
 }

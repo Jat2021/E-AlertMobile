@@ -53,7 +53,7 @@ fun ReportTypeLabel (reportType : String) {
                 contentDescription = null
             )
 
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Text(
                 color = colorScheme.onSecondaryContainer,
